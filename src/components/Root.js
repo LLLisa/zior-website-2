@@ -7,6 +7,7 @@ import Calendar from "../views/Calendar";
 import ForTheNewcomer from "../views/ForTheNewcomer";
 import HelpfulLinks from "../views/HelpfulLinks";
 import ServiceAtZior from "../views/ServiceAtZior";
+import SlideDeck from "../components/SlideDeck";
 
 const Root = () => {
     return (
@@ -20,6 +21,7 @@ const Root = () => {
               <Route path="/for-the-newcomer" component={ForTheNewcomer} />
               <Route path="/helpful-links" component={HelpfulLinks} />
               <Route path="/service-at-zior" component={ServiceAtZior} />
+              <Route path="/slide-deck" component={SlideDeck} />
             </HashRouter>
             <div>footer</div>
         </div>
