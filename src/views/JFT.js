@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import DOMPurify from 'dompurify';
 import { loadJFT } from '../store/jftReducer';
+import { FullScreen, useFullScreenHandle } from "react-full-screen";
 
 const classes = {
     renderedJft: {
@@ -16,6 +17,7 @@ const classes = {
 
 const JFT = ({ jft, loadJFT }) => {
     const [currentDate, setCurrentDate] = useState(new Date().toDateString());
+    const handle = useFullScreenHandle();
 
     useEffect(() => {
       if (!jft.length) loadJFT();
@@ -35,10 +37,13 @@ const JFT = ({ jft, loadJFT }) => {
     return (
         <div>
             <h1>Just For Today</h1>
-            <div
-                style={classes.renderedJft}
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(jft) }}
-            />
+            <FullScreen handle={handle}>
+                <div
+                    style={classes.renderedJft}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(jft) }}
+                />
+            </FullScreen>
+            <button onClick={handle.enter}>Full Screen</button>
         </div>
     );
 };
