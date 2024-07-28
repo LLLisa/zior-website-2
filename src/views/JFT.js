@@ -1,5 +1,8 @@
 import React, { useEffect } from "react";
+import { connect } from "react-redux";
 import axios from "axios";
+import DOMPurify from "dompurify";
+import { loadJFT } from "../store/jftReducer";
 
 const classes = {
   renderedJft: {
@@ -12,24 +15,33 @@ const classes = {
   },
 };
 
-const JFT = () => {
-  const [jft, setJft] = React.useState("");
-  
-  useEffect(() => {
-    fetchJFT();
-  }, []);
-  
-  const fetchJFT = async () => {
-    const response = await axios.get("/jft");
-    setJft(response.data.jft);
-  };
+const JFT = ({jft, loadJFT}) => {
 
-  return (
-    <div>
-      <h1>Just For Today</h1>
-      <div style={classes.renderedJft} dangerouslySetInnerHTML={{ __html: jft}} />
-    </div>
-  );
+    useEffect(() => {
+        if(!jft.length) loadJFT();
+    }, []);
+
+    return (
+        <div>
+            <h1>Just For Today</h1>
+            <div
+                style={classes.renderedJft}
+                dangerouslySetInnerHTML={{ __html: jft }}
+            />
+        </div>
+    );
 }
 
-export default JFT;
+const mapState = (state) => {
+    return {
+        jft: state.jft,
+    };
+};
+
+const mapDispatch = (dispatch) => {
+    return {
+        loadJFT: () => dispatch(loadJFT()),
+    };
+};
+
+export default connect(mapState, mapDispatch)(JFT);

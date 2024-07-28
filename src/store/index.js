@@ -1,9 +1,9 @@
 import {createStore, applyMiddleware, combineReducers} from "redux";
 import thunk from "redux-thunk";
+import jftReducer from "./jftReducer";
 
+const rootReducer = combineReducers({jft: jftReducer});
 
-function configureStore() {
-    // return createStore(########, applyMiddleware(thunk));
-}
+const store = createStore(rootReducer, applyMiddleware(thunk));
 
-export default configureStore;
+export default store;

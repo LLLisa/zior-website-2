@@ -14,7 +14,7 @@ app.use(volleyball)
 //this is where some things should go
 app.get('/jft', async (req, res) => {
   const jft = await axios.get('https://www.jftna.org/jft/')
-  res.json({jft: jft.data})
+  res.send(jft.data)
 })
 
 
