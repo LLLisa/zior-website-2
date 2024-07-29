@@ -7,7 +7,8 @@ import Calendar from "../views/Calendar";
 import ForTheNewcomer from "../views/ForTheNewcomer";
 import HelpfulLinks from "../views/HelpfulLinks";
 import ServiceAtZior from "../views/ServiceAtZior";
-import SlideDeck from "../components/SlideDeck";
+import DailySlides from "../views/DailySlides";
+import AnniversarySlides from "../views/AnniversarySlides";
 
 const Root = () => {
     return (
@@ -21,7 +22,8 @@ const Root = () => {
               <Route path="/for-the-newcomer" component={ForTheNewcomer} />
               <Route path="/helpful-links" component={HelpfulLinks} />
               <Route path="/service-at-zior" component={ServiceAtZior} />
-              <Route path="/slide-deck" component={SlideDeck} />
+              <Route path="/slide-deck-daily" component={DailySlides} />
+              <Route path="/slide-deck-anniversary" component={AnniversarySlides} />
             </HashRouter>
             <div>footer</div>
         </div>

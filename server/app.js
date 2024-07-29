@@ -17,6 +17,10 @@ app.get('/jft', async (req, res) => {
   res.send(jft.data)
 })
 
+app.get('/slides/:id', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'slides', req.params.id))
+})
+
 
 
 

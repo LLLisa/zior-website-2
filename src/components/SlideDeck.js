@@ -1,23 +1,21 @@
 import React from 'react';
 import Carousel from 'react-material-ui-carousel'
-import { Paper, Button } from '@mui/material'
+import { Paper } from '@mui/material'
 import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 
-function SlideDeck(props)
-{
+const classes = {
+    slide: {
+        height: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+};
+
+const SlideDeck = ({ slides }) => {
     const handle = useFullScreenHandle();
-    var items = [
-        {
-            name: "Random Name #1",
-            description: "Probably the most random thing you have ever seen!"
-        },
-        {
-            name: "Random Name #2",
-            description: "Hello World!"
-        }
-    ]
 
     return (
         <div>
@@ -31,7 +29,7 @@ function SlideDeck(props)
                     PrevIcon={<ArrowCircleLeftIcon />}
                 >
                     {
-                        items.map( (item, i) => <Item key={i} item={item} /> )
+                        slides.map( (item, i) => <Item key={i} item={item} /> )
                     }
                 </Carousel>
             </FullScreen>
@@ -40,16 +38,11 @@ function SlideDeck(props)
     )
 }
 
-function Item(props)
+function Item({ item })
 {
     return (
-        <Paper>
-            <h2>{props.item.name}</h2>
-            <p>{props.item.description}</p>
-
-            <Button className="CheckButton">
-                Check it out!
-            </Button>
+        <Paper style={classes.slide}>
+            <img src={item.image} alt={item.alt} />
         </Paper>
     )
 }
