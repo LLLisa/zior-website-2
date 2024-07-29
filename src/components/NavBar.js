@@ -17,7 +17,7 @@ const classes = {
 const routes = [
     {
         path: '/#/about',
-        label: 'About',
+        label: 'About Us',
     },
     {
         path: '/#/calendar',

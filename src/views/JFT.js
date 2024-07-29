@@ -36,7 +36,6 @@ const JFT = ({ jft, loadJFT }) => {
 
     return (
         <div>
-            <h1>Just For Today</h1>
             <FullScreen handle={handle}>
                 <div
                     style={classes.renderedJft}
