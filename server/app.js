@@ -21,8 +21,9 @@ app.get('/slides/:id', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'slides', req.params.id))
 })
 
-
-
+app.get('/zoomQrCode', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'zoomQrCode.png'))
+})
 
 module.exports = app;
 
