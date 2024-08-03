@@ -1,17 +1,24 @@
-import React from "react";
+import React from 'react';
 
 const classes = {
-  list: {
-    display: "flex",
-    justifyContent: "center",
-    listStyle: "none",
-    padding: 0,
-    backgroundColor: 'lightblue',
-  },
-  navItem: {
-    margin: "0 1rem",
-
-  },
+    list: {
+        display: 'flex',
+        justifyContent: 'center',
+        listStyle: 'none',
+        padding: 0,
+        backgroundColor: 'lightblue',
+    },
+    navItem: {
+        margin: '0 1rem',
+    },
+    a: {
+        color: 'inherit',
+        textDecoration: 'none',
+        outline: 'none',
+    },
+    selected: {
+      outline: '1px solid black',
+    },
 };
 
 const routes = [
@@ -40,19 +47,31 @@ const routes = [
         label: 'Helpful Links',
     },
     {
-      path: '/#/seventh-tradition',
-      label: '7th Tradition',
-    }
+        path: '/#/seventh-tradition',
+        label: '7th Tradition',
+    },
 ];
 
 const NavBar = () => {
-  return (
-    <nav>
-      <ul style={classes.list}>
-        {routes.map((route) => <li key={route.label} style={classes.navItem}><a href={route.path}>{route.label}</a></li>)}
-      </ul>
-    </nav>
-  );
+    return (
+        <nav>
+            <ul style={classes.list}>
+                {routes.map((route) => (
+                    <li
+                        key={route.label}
+                        style={classes.navItem}
+                    >
+                        <a
+                            style={classes.a}
+                            href={route.path}
+                        >
+                            {route.label}
+                        </a>
+                    </li>
+                ))}
+            </ul>
+        </nav>
+    );
 };
 
 export default NavBar;

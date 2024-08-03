@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, HashRouter} from "react-router-dom";
+import { Route, HashRouter, Redirect} from "react-router-dom";
 import About from "../views/About";
 import JFT from "../views/JFT";
 import Calendar from "../views/Calendar";
@@ -15,7 +15,6 @@ import AnniversaryScript from "../views/AnniversaryScript";
 const Routes = () => {
   return (
       <HashRouter>
-          <Route exact path="/" component={About} />
           <Route path="/about" component={About} />
           <Route path="/jft" component={JFT} />
           <Route path="/calendar" component={Calendar} />
@@ -27,6 +26,9 @@ const Routes = () => {
           <Route path="/seventh-tradition" component={SeventhTradition} />
           <Route path="/daily-script" component={DailyScript} />
           <Route path="/anniversary-script" component={AnniversaryScript} />
+          <Route exact path="/">
+            <Redirect to="/about" />
+          </Route>
       </HashRouter>
     )
 }

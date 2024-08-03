@@ -10,7 +10,8 @@ const classes = {
         justifyContent: 'space-between',
         overflow: 'hidden',
         height: '95vh',
-    }
+        fontFamily: 'Arial, sans-serif',
+    },
 }
 
 const Root = () => {
