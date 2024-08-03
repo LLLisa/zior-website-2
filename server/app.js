@@ -25,5 +25,13 @@ app.get('/zoomQrCode', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'zoomQrCode.png'))
 })
 
+app.get('/dailyScript', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'scripts', 'currentDailyScript.pdf'))
+})
+
+app.get('/anniversaryScript', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'scripts', 'currentAnniversaryScript.pdf'))
+})
+
 module.exports = app;
 

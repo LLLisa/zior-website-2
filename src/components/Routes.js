@@ -9,6 +9,8 @@ import ServiceAtZior from "../views/ServiceAtZior";
 import DailySlides from "../views/DailySlides";
 import AnniversarySlides from "../views/AnniversarySlides";
 import SeventhTradition from "../views/SeventhTradition";
+import DailyScript from "../views/DailyScript";
+import AnniversaryScript from "../views/AnniversaryScript";
 
 const Routes = () => {
   return (
@@ -23,6 +25,8 @@ const Routes = () => {
           <Route path="/slide-deck-daily" component={DailySlides} />
           <Route path="/slide-deck-anniversary" component={AnniversarySlides} />
           <Route path="/seventh-tradition" component={SeventhTradition} />
+          <Route path="/daily-script" component={DailyScript} />
+          <Route path="/anniversary-script" component={AnniversaryScript} />
       </HashRouter>
     )
 }
