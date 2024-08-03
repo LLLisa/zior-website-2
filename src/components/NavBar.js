@@ -20,16 +20,16 @@ const routes = [
         label: 'About Us',
     },
     {
+        path: '/#/for-the-newcomer',
+        label: 'For the Newcomer',
+    },
+    {
         path: '/#/calendar',
         label: 'Calendar',
     },
     {
         path: '/#/jft',
         label: 'JFT',
-    },
-    {
-        path: '/#/for-the-newcomer',
-        label: 'For the Newcomer',
     },
     {
         path: '/#/service-at-zior',
@@ -39,6 +39,10 @@ const routes = [
         path: '/#/helpful-links',
         label: 'Helpful Links',
     },
+    {
+      path: '/#/seventh-tradition',
+      label: '7th Tradition',
+    }
 ];
 
 const NavBar = () => {
