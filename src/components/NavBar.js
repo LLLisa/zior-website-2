@@ -36,7 +36,7 @@ const routes = [
     },
     {
         path: '/#/jft',
-        label: 'JFT',
+        label: 'Just For Today',
     },
     {
         path: '/#/service-at-zior',
