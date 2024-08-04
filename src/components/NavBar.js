@@ -8,7 +8,7 @@ const classes = {
         justifyContent: 'center',
         listStyle: 'none',
         padding: 0,
-        backgroundColor: theme.secondary,
+        backgroundColor: theme.secondaryBG,
     },
     navItem: {
         margin: '0 1rem',

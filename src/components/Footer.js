@@ -10,7 +10,7 @@ const classes = {
         justifyContent: 'center',
         alignItems: 'center',
         justifyContent: 'space-around',
-        backgroundColor: theme.secondary,
+        backgroundColor: theme.secondaryBG,
         color: theme.text,
     },
 };

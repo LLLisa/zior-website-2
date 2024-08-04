@@ -13,7 +13,7 @@ const classes = {
         height: '100vh',
         fontFamily: 'Arial, sans-serif',
         width: '1200px',
-        backgroundColor: theme.primary,
+        backgroundColor: theme.primaryBG,
     },
 };
 

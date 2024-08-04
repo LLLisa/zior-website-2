@@ -11,7 +11,7 @@ const classes = {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: theme.secondary,
+        backgroundColor: theme.secondaryBG,
         color: theme.text,
     },
 };
