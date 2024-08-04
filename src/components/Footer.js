@@ -2,6 +2,8 @@ import React from "react";
 import { getEasternTimeAsLocal } from "../utils/getEasternTimeAsLocal";
 import theme from "../utils/theme";
 
+const { palette } = theme
+
 const classes = {
     footer: {
         position: 'sticky',
@@ -10,8 +12,8 @@ const classes = {
         justifyContent: 'center',
         alignItems: 'center',
         justifyContent: 'space-around',
-        backgroundColor: theme.secondaryBG,
-        color: theme.altText,
+        backgroundColor: palette.secondaryBG,
+        color: palette.altText,
     },
 };
 

@@ -2,6 +2,8 @@ import React from "react";
 import NavBar from "./NavBar";
 import theme from "../utils/theme";
 
+const { palette } = theme
+
 const classes = {
     header: {
         position: 'sticky',
@@ -11,8 +13,8 @@ const classes = {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: theme.secondaryBG,
-        color: theme.altText,
+        backgroundColor: palette.secondaryBG,
+        color: palette.altText,
     },
 };
 

@@ -5,6 +5,8 @@ import Header from './Header';
 import Footer from './Footer';
 import Routes from './Routes';
 
+const { palette } = theme
+
 const classes = {
     main: {
         display: 'flex',
@@ -13,7 +15,7 @@ const classes = {
         height: '100vh',
         fontFamily: 'Arial, sans-serif',
         width: '1200px',
-        backgroundColor: theme.primaryBG,
+        backgroundColor: palette.primaryBG,
     },
 };
 

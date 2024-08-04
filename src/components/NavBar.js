@@ -2,13 +2,15 @@ import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import theme from '../utils/theme';
 
+const { palette } = theme
+
 const classes = {
     list: {
         display: 'flex',
         justifyContent: 'center',
         listStyle: 'none',
         padding: 0,
-        backgroundColor: theme.secondaryBG,
+        backgroundColor: palette.secondaryBG,
     },
     navItem: {
         margin: '0 1rem',
@@ -17,7 +19,7 @@ const classes = {
     selected: {
         outline: '1px solid black',
         borderRadius: '0.5rem',
-        color: theme.highlight
+        color: palette.highlight
     },
     a: {
         color: 'inherit',
