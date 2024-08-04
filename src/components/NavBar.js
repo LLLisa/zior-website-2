@@ -15,6 +15,7 @@ const classes = {
     navItem: {
         margin: '0 1rem',
         padding: '0.5rem',
+        color: palette.altText
     },
     selected: {
         outline: '1px solid black',
