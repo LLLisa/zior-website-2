@@ -33,5 +33,9 @@ app.get('/anniversaryScript', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'scripts', 'currentAnniversaryScript.pdf'))
 })
 
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'))
+})
+
 module.exports = app;
 

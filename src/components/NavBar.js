@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const classes = {
     list: {
@@ -23,31 +24,31 @@ const classes = {
 
 const routes = [
     {
-        path: '/#/about',
+        path: '/about',
         label: 'About Us',
     },
     {
-        path: '/#/for-the-newcomer',
+        path: '/for-the-newcomer',
         label: 'For the Newcomer',
     },
     {
-        path: '/#/calendar',
+        path: '/calendar',
         label: 'Calendar',
     },
     {
-        path: '/#/jft',
+        path: '/jft',
         label: 'Just For Today',
     },
     {
-        path: '/#/service-at-zior',
+        path: '/service-at-zior',
         label: 'Service at ZIOR',
     },
     {
-        path: '/#/helpful-links',
+        path: '/helpful-links',
         label: 'Helpful Links',
     },
     {
-        path: '/#/seventh-tradition',
+        path: '/seventh-tradition',
         label: '7th Tradition',
     },
 ];
@@ -61,12 +62,9 @@ const NavBar = () => {
                         key={route.label}
                         style={classes.navItem}
                     >
-                        <a
+                        <Link
                             style={classes.a}
-                            href={route.path}
-                        >
-                            {route.label}
-                        </a>
+                            to={route.path}>{route.label}</Link>
                     </li>
                 ))}
             </ul>

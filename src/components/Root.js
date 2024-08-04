@@ -1,7 +1,8 @@
-import React from "react";
-import Header from "./Header";
-import Footer from "./Footer";
-import Routes from "./Routes";
+import React from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
+import Header from './Header';
+import Footer from './Footer';
+import Routes from './Routes';
 
 const classes = {
     main: {
@@ -11,16 +12,18 @@ const classes = {
         height: '100vh',
         fontFamily: 'Arial, sans-serif',
     },
-}
+};
 
 const Root = () => {
     return (
         <main style={classes.main}>
-            <Header />
-            <Routes />
-            <Footer />
+            <Router>
+                <Header />
+                <Routes />
+                <Footer />
+            </Router>
         </main>
     );
-}
+};
 
 export default Root;
