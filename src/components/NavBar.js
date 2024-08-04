@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
 const classes = {
     list: {
@@ -11,14 +11,16 @@ const classes = {
     },
     navItem: {
         margin: '0 1rem',
+        padding: '0.5rem',
+    },
+    selected: {
+        outline: '1px solid black',
+        borderRadius: '0.5rem',
     },
     a: {
         color: 'inherit',
         textDecoration: 'none',
         outline: 'none',
-    },
-    selected: {
-      outline: '1px solid black',
     },
 };
 
@@ -54,14 +56,21 @@ const routes = [
 ];
 
 const NavBar = () => {
+    const location = useLocation();
+    const [selected, setSelected] = React.useState(null);
+    
+    useEffect(() =>{
+        setSelected(location.pathname);
+    }, [location]);
+
     return (
         <nav>
             <ul style={classes.list}>
                 {routes.map((route) => (
                     <li
                         key={route.label}
-                        style={classes.navItem}
-                    >
+                        style={route.path === selected ? {...classes.navItem, ...classes.selected} : classes.navItem}
+                        >
                         <Link
                             style={classes.a}
                             to={route.path}>{route.label}</Link>
