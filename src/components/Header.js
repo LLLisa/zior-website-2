@@ -12,7 +12,7 @@ const classes = {
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: theme.secondaryBG,
-        color: theme.text,
+        color: theme.altText,
     },
 };
 

@@ -11,7 +11,7 @@ const classes = {
         alignItems: 'center',
         justifyContent: 'space-around',
         backgroundColor: theme.secondaryBG,
-        color: theme.text,
+        color: theme.altText,
     },
 };
 
