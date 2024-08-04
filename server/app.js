@@ -12,7 +12,7 @@ app.use(cors())
 app.use(volleyball)
 
 //this is where some things should go
-app.get('/jft', async (req, res) => {
+app.get('/jftText', async (req, res) => {
   const jft = await axios.get('https://www.jftna.org/jft/')
   res.send(jft.data)
 })

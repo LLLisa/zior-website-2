@@ -4,7 +4,7 @@ const LOAD_JFT = "LOAD_JFT";
 
 export const loadJFT = () => {
     return async (dispatch) => {
-        const response = await axios.get("jft");
+        const response = await axios.get("jftText");
         dispatch({
             type: LOAD_JFT,
             payload: response.data
