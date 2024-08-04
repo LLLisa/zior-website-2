@@ -14,7 +14,7 @@ const classes = {
         justifyContent: 'space-between',
         height: '100vh',
         fontFamily: 'Arial, sans-serif',
-        width: '1200px',
+        width: '100vw',
         backgroundColor: palette.primaryBG,
     },
 };
