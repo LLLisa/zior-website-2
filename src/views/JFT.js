@@ -16,23 +16,11 @@ const classes = {
 };
 
 const JFT = ({ jft, loadJFT }) => {
-    const [currentDate, setCurrentDate] = useState(new Date().toDateString());
     const handle = useFullScreenHandle();
 
     useEffect(() => {
       if (!jft.length) loadJFT();
-  
-      // Fetch new JFT every day if tab is open
-      const intervalId = setInterval(() => {
-        const now = new Date().toDateString();
-        if (now !== currentDate) {
-          setCurrentDate(now);
-          fetchData();
-        }
-      }, 60000);
-      
-      return () => clearInterval(intervalId);
-    }, [currentDate]);
+    }, []);
 
     return (
         <div>

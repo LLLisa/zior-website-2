@@ -9,7 +9,7 @@ const classes = {
         flexDirection: 'column',
         justifyContent: 'space-between',
         overflow: 'hidden',
-        height: '95vh',
+        height: '100vh',
         fontFamily: 'Arial, sans-serif',
     },
 }
