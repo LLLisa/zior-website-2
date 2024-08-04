@@ -9,19 +9,19 @@ const classes = {
 
 const links = [
     {
-        path: '/#/daily-script',
+        path: '/daily-script',
         label: 'Daily Script',
     },
     {
-        path: '/#/slide-deck-daily',
+        path: '/slide-deck-daily',
         label: 'Slide Deck (daily meeting)',
     },
     {
-        path: '/#/anniversary-script',
+        path: '/anniversary-script',
         label: 'Anniversary Script',
     },
     {
-        path: '/#/slide-deck-anniversary',
+        path: '/slide-deck-anniversary',
         label: 'Slide Deck (anniversary meeting)',
     },
 ];
