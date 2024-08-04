@@ -3,13 +3,14 @@ import { getEasternTimeAsLocal } from "../utils/getEasternTimeAsLocal";
 
 const classes = {
     footer: {
+        position: 'sticky',
+        bottom: 0,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         justifyContent: 'space-around',
         backgroundColor: 'lightblue',
         color: 'black',
-        padding: '1rem',
     },
 };
 

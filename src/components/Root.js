@@ -8,7 +8,6 @@ const classes = {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        overflow: 'hidden',
         height: '100vh',
         fontFamily: 'Arial, sans-serif',
     },

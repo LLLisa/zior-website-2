@@ -3,13 +3,15 @@ import NavBar from "./NavBar";
 
 const classes = {
     header: {
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'lightblue',
         color: 'black',
-        padding: '1rem',
     },
 };
 
