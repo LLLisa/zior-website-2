@@ -1,8 +1,9 @@
 import React from "react";
+import theme from "../utils/theme";
 
 const About = () => {
   return (
-      <div>
+      <div style={theme.contentContainer}>
           <h1>About Us</h1>
           <p>
               This is the about section. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad

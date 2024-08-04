@@ -1,4 +1,5 @@
 import React from 'react';
+import theme from '../utils/theme';
 
 const classes = {
     a: {
@@ -27,7 +28,7 @@ const links = [
 
 const ServiceAtZior = () => {
     return (
-        <div>
+        <div style={theme.contentContainer}>
             <h1>ServiceAtZior</h1>
             <p>
                 This is the ServiceAtZior section. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut

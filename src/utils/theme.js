@@ -8,12 +8,12 @@ const palette = {
 
 const contentContainer = {
   padding: '1rem',
-  color: palette.text
+  color: palette.text,
 }
 
 const theme = {
   palette,
-  contentContainer
+  contentContainer,
 }
 
 export default theme;
