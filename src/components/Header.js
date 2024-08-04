@@ -1,5 +1,6 @@
 import React from "react";
 import NavBar from "./NavBar";
+import theme from "../utils/theme";
 
 const classes = {
     header: {
@@ -10,8 +11,8 @@ const classes = {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'lightblue',
-        color: 'black',
+        backgroundColor: theme.secondary,
+        color: theme.text,
     },
 };
 

@@ -1,5 +1,6 @@
 import React from "react";
 import { getEasternTimeAsLocal } from "../utils/getEasternTimeAsLocal";
+import theme from "../utils/theme";
 
 const classes = {
     footer: {
@@ -9,8 +10,8 @@ const classes = {
         justifyContent: 'center',
         alignItems: 'center',
         justifyContent: 'space-around',
-        backgroundColor: 'lightblue',
-        color: 'black',
+        backgroundColor: theme.secondary,
+        color: theme.text,
     },
 };
 
