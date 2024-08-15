@@ -12,10 +12,12 @@ import SeventhTradition from "../views/SeventhTradition";
 import DailyScript from "../views/DailyScript";
 import AnniversaryScript from "../views/AnniversaryScript";
 import PageNotFound from "../views/PageNotFound";
+import Home from "../views/Home";
 
 const Routes = () => {
   return (
       <Switch>
+        <Route path="/home" component={Home} />
         <Route path="/about" component={About} />
         <Route path="/jft" component={JFT} />
         <Route path="/calendar" component={Calendar} />
@@ -28,7 +30,7 @@ const Routes = () => {
         <Route path="/daily-script" component={DailyScript} />
         <Route path="/anniversary-script" component={AnniversaryScript} />
         <Route exact path="/">
-          <Redirect to="/about" />
+          <Redirect to="/home" />
         </Route>
         <Route component={PageNotFound} />
       </Switch>
