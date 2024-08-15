@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import theme from '../utils/theme';
 
-const { palette } = theme
+const { palette } = theme;
 
 const classes = {
     list: {
@@ -15,17 +15,20 @@ const classes = {
     navItem: {
         margin: '0 1rem',
         padding: '0.5rem',
-        color: palette.altText
+        borderRadius: '0.5rem',
+        color: palette.altText,
     },
     selected: {
         outline: '1px solid black',
-        borderRadius: '0.5rem',
-        color: palette.highlight
+        color: palette.highlight,
     },
     a: {
         color: 'inherit',
         textDecoration: 'none',
         outline: 'none',
+    },
+    linkText: {
+        textAlign: 'center',
     },
 };
 
@@ -63,8 +66,8 @@ const routes = [
 const NavBar = () => {
     const location = useLocation();
     const [selected, setSelected] = React.useState(null);
-    
-    useEffect(() =>{
+
+    useEffect(() => {
         setSelected(location.pathname);
     }, [location]);
 
@@ -74,11 +77,14 @@ const NavBar = () => {
                 {routes.map((route) => (
                     <li
                         key={route.label}
-                        style={route.path === selected ? {...classes.navItem, ...classes.selected} : classes.navItem}
-                        >
+                        style={route.path === selected ? { ...classes.navItem, ...classes.selected } : classes.navItem}
+                    >
                         <Link
                             style={classes.a}
-                            to={route.path}>{route.label}</Link>
+                            to={route.path}
+                        >
+                            <div style={classes.linkText}>{route.label}</div>
+                        </Link>
                     </li>
                 ))}
             </ul>
