@@ -11,6 +11,10 @@ const contentContainer = {
   color: palette.text,
 }
 
+const h1 = {
+  backgroundColor: 'blue',
+};
+
 const theme = {
   palette,
   contentContainer,
