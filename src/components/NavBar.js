@@ -14,7 +14,7 @@ const classes = {
     },
     navItem: {
         margin: '0 1rem',
-        padding: '0.5rem',
+        padding: '0b0.5rem',
         borderRadius: '0.5rem',
         color: palette.altText,
     },

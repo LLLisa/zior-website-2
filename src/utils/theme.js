@@ -8,7 +8,7 @@ const palette = {
 
 const contentContainer = {
   height: '100%',
-  padding: '1rem',
+  padding: '1rem 2rem',
   color: palette.text,
 }
 

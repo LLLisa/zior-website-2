@@ -21,6 +21,7 @@ const classes = {
         color: 'inherit',
         textDecoration: 'none',
         outline: 'none',
+        marginBottom: '-1rem',
     },
 };
 
