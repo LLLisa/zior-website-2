@@ -43,7 +43,7 @@ const Home = () => {
             <p>
                 The format of this meeting is a book study. We read the Just for Today daily meditation and then our speaker shares for 10-15 minutes on the reading. After that we
                 have open shares until 10 minutes before the hour, at which time we call for a burning desire. We have celebrate anniversaries on the last Wednesday of the month,
-                and our business meetings are held every 1st and 3rd Monday an hour before the meeting. check out <Link too='/calendar'>our calendar</Link> for more information.
+                and our business meetings are held every 1st and 3rd Monday an hour before the meeting. check out <Link to='/calendar'>our calendar</Link> for more information.
             </p>
             <p>We hope you will join us and find the love and support that we have found in this fellowship. And above all, KEEP COMING BACK!</p>
         </div>

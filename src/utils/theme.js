@@ -7,18 +7,18 @@ const palette = {
 };
 
 const contentContainer = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
   height: '100%',
+  maxWidth: '800px',
   padding: '1rem 2rem',
   color: palette.text,
-}
-
-const h1 = {
-  backgroundColor: 'blue',
 };
 
 const theme = {
   palette,
   contentContainer,
-}
+};
 
 export default theme;

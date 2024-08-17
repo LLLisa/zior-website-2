@@ -12,6 +12,7 @@ const classes = {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'start',
+        alignItems: 'center',
         height: '100vh',
         fontFamily: 'Arial, sans-serif',
         width: '100vw',

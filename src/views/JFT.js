@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import DOMPurify from 'dompurify';
 import { loadJFT } from '../store/jftReducer';
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
+import theme from '../utils/theme';
 
 const classes = {
     renderedJft: {
@@ -23,7 +24,7 @@ const JFT = ({ jft, loadJFT }) => {
     }, []);
 
     return (
-        <div>
+        <div style={theme.contentContainer}>
             <FullScreen handle={handle}>
                 <div
                     style={classes.renderedJft}
