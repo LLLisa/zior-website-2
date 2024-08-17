@@ -7,6 +7,7 @@ const palette = {
 };
 
 const contentContainer = {
+  height: '100%',
   padding: '1rem',
   color: palette.text,
 }

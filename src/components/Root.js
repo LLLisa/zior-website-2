@@ -11,7 +11,7 @@ const classes = {
     main: {
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'space-between',
+        justifyContent: 'start',
         height: '100vh',
         fontFamily: 'Arial, sans-serif',
         width: '100vw',

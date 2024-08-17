@@ -6,6 +6,7 @@ const classes = {
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+    height: '100%',
   },
 };
 
