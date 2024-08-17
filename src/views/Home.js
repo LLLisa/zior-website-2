@@ -10,6 +10,7 @@ const classes = {
     },
     linksContainer: {
         display: 'flex',
+        width: '100%',
         justifyContent: 'space-around',
         alignItems: 'center',
     },
@@ -45,7 +46,8 @@ const Home = () => {
                 have open shares until 10 minutes before the hour, at which time we call for a burning desire. We have celebrate anniversaries on the last Wednesday of the month,
                 and our business meetings are held every 1st and 3rd Monday an hour before the meeting. check out <Link to='/calendar'>our calendar</Link> for more information.
             </p>
-            <p>We hope you will join us and find the love and support that we have found in this fellowship. And above all, KEEP COMING BACK!</p>
+            <p>We hope you will join us and find the love and support that we have found in this fellowship. And above all,</p>
+            <p> KEEP COMING BACK!</p>
         </div>
     );
 };

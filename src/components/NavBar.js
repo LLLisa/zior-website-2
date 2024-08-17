@@ -13,9 +13,12 @@ const classes = {
         backgroundColor: palette.secondaryBG,
     },
     navItem: {
-        margin: '0 1rem',
-        padding: '0b0.5rem',
+        margin: '0 0.5rem',
+        padding: '0 0.5rem',
         borderRadius: '0.5rem',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         color: palette.altText,
     },
     selected: {
