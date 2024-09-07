@@ -21,8 +21,7 @@ const classes = {
         height: '100vh',
         width: '80vw',
         margin: '0 auto',
-        padding: '40px',
-        paddingTop: '10px',
+        padding: '10px 40px 40px 40px',
     },
 };
 
