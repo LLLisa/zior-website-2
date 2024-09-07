@@ -7,7 +7,6 @@ import { FullScreen, useFullScreenHandle } from "react-full-screen";
 
 const classes = {
     slide: {
-        height: '100vh',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',

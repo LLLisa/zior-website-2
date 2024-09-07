@@ -78,7 +78,7 @@ const slides = [
 
 const AnniversarySlides = () => {
   return (
-      <div>
+      <div style={{width: '150dvh' }}>
           <SlideDeck slides={slides} />
       </div>
   )

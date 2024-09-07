@@ -34,7 +34,7 @@ const slides = [
 
 const DailySlides = () => {
   return (
-      <div>
+      <div style={{width: '150dvh' }}>
           <SlideDeck slides={slides} />
       </div>
   )
