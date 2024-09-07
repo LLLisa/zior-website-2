@@ -6,10 +6,17 @@ import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 
 const classes = {
+    slideContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        width: '100%',
+    },
     slide: {
         display: 'flex',
-        justifyContent: 'center',
+        flexDirection: 'column',
         alignItems: 'center',
+        height: '100%',
     },
 };
 
@@ -17,7 +24,7 @@ const SlideDeck = ({ slides }) => {
     const handle = useFullScreenHandle();
 
     return (
-        <div>
+        <div style={classes.slideContainer}>
             <FullScreen handle={handle}>
                 <Carousel
                     autoPlay={false}
