@@ -1,8 +1,12 @@
 import {createStore, applyMiddleware, combineReducers} from "redux";
 import thunk from "redux-thunk";
 import jftReducer from "./jftReducer";
+import fullscreenReducer from "./fullscreenReducer";
 
-const rootReducer = combineReducers({jft: jftReducer});
+const rootReducer = combineReducers({
+  jft: jftReducer,
+  isFullscreen: fullscreenReducer
+});
 
 const store = createStore(rootReducer, applyMiddleware(thunk));
 
