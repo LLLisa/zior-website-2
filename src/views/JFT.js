@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import DOMPurify from 'dompurify';
 import { loadJFT } from '../store/jftReducer';
-import { toggleFullscreen } from '../store/fullscreenReducer';
+import { toggleFullscreen, setFullScreenHandle } from '../store/fullscreenReducer';
 import { FullScreen, useFullScreenHandle } from 'react-full-screen';
 import theme from '../utils/theme';
 
@@ -25,12 +25,16 @@ const classes = {
     },
 };
 
-const JFT = ({ jft, loadJFT, isFullscreen, toggleFullscreen }) => {
+const JFT = ({ jft, loadJFT, isFullscreen, toggleFullscreen, setFullScreenHandle }) => {
     const handle = useFullScreenHandle();
 
     useEffect(() => {
         if (!jft.length) loadJFT();
     }, []);
+
+    useEffect(() => {
+        setFullScreenHandle(handle);
+    }, [handle]);
 
     const handleFullScreenChange = () => {
         if (!document.fullscreenElement) {
@@ -51,7 +55,6 @@ const JFT = ({ jft, loadJFT, isFullscreen, toggleFullscreen }) => {
                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(jft) }}
                 />
             </FullScreen>
-            <button onClick={handle.enter}>Full Screen</button>
         </div>
     );
 };
@@ -59,7 +62,7 @@ const JFT = ({ jft, loadJFT, isFullscreen, toggleFullscreen }) => {
 const mapState = (state) => {
     return {
         jft: state.jft,
-        isFullscreen: state.isFullscreen,
+        isFullscreen: state.fullscreen.isFullscreen,
     };
 };
 
@@ -67,6 +70,7 @@ const mapDispatch = (dispatch) => {
     return {
         loadJFT: () => dispatch(loadJFT()),
         toggleFullscreen: (fullscreenState) => dispatch(toggleFullscreen(fullscreenState)),
+        setFullScreenHandle: (handle) => dispatch(setFullScreenHandle(handle)),
     };
 };
 

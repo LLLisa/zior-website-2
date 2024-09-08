@@ -5,7 +5,7 @@ import fullscreenReducer from "./fullscreenReducer";
 
 const rootReducer = combineReducers({
   jft: jftReducer,
-  isFullscreen: fullscreenReducer
+  fullscreen: fullscreenReducer
 });
 
 const store = createStore(rootReducer, applyMiddleware(thunk));
