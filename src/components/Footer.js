@@ -40,7 +40,8 @@ const Footer = ({fullscreenHandle}) => {
     }, [location]);
 
     const canBeFullscreen = ({pathname}) => {
-        const fullscreenPaths = ['jft'];
+        console.log(pathname);
+        const fullscreenPaths = ['jft', 'slide-deck-daily', 'slide-deck-anniversary'];
         return fullscreenPaths.some((path) => pathname.includes(path));
     };    
 

@@ -1,9 +1,11 @@
-import React from 'react';
-import Carousel from 'react-material-ui-carousel'
-import { Paper } from '@mui/material'
+import React, { useEffect } from 'react';
+import { connect } from 'react-redux';
+import Carousel from 'react-material-ui-carousel';
+import { Paper } from '@mui/material';
 import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
-import { FullScreen, useFullScreenHandle } from "react-full-screen";
+import { toggleFullscreen, setFullScreenHandle } from '../store/fullscreenReducer';
+import { FullScreen, useFullScreenHandle } from 'react-full-screen';
 
 const classes = {
     slideContainer: {
@@ -20,12 +22,27 @@ const classes = {
     },
 };
 
-const SlideDeck = ({ slides }) => {
+const SlideDeck = ({ slides, isFullscreen, toggleFullscreen, setFullScreenHandle }) => {
     const handle = useFullScreenHandle();
+
+    useEffect(() => {
+        setFullScreenHandle(handle);
+    }, [handle]);
+
+    const handleFullScreenChange = () => {
+        if (!document.fullscreenElement) {
+            toggleFullscreen(false);
+        } else {
+            toggleFullscreen(true);
+        }
+    };
 
     return (
         <div style={classes.slideContainer}>
-            <FullScreen handle={handle}>
+            <FullScreen
+                handle={handle}
+                onChange={handleFullScreenChange}
+            >
                 <Carousel
                     autoPlay={false}
                     animation='slide'
@@ -34,23 +51,40 @@ const SlideDeck = ({ slides }) => {
                     NextIcon={<ArrowCircleRightIcon />}
                     PrevIcon={<ArrowCircleLeftIcon />}
                 >
-                    {
-                        slides.map( (item, i) => <Item key={i} item={item} /> )
-                    }
+                    {slides.map((item, i) => (
+                        <Item
+                            key={i}
+                            item={item}
+                        />
+                    ))}
                 </Carousel>
             </FullScreen>
-            <button onClick={handle.enter}>Full Screen</button>
         </div>
-    )
-}
+    );
+};
 
-function Item({ item })
-{
+function Item({ item }) {
     return (
         <Paper style={classes.slide}>
-            <img src={item.image} alt={item.alt} />
+            <img
+                src={item.image}
+                alt={item.alt}
+            />
         </Paper>
-    )
+    );
 }
 
-export default SlideDeck;
+const mapState = (state) => {
+    return {
+        isFullscreen: state.fullscreen.isFullscreen,
+    };
+};
+
+const mapDispatch = (dispatch) => {
+    return {
+        toggleFullscreen: (fullscreenState) => dispatch(toggleFullscreen(fullscreenState)),
+        setFullScreenHandle: (handle) => dispatch(setFullScreenHandle(handle)),
+    };
+};
+
+export default connect(mapState, mapDispatch)(SlideDeck);
