@@ -8,6 +8,8 @@ const classes = {
     slideContainer: {
         display: 'flex',
         flexDirection: 'column',
+        height: '100dvh',
+        padding: '1rem',
     },
     slide: {
         display: 'flex',
@@ -44,6 +46,7 @@ function Item({ item, isFullscreen }) {
             <img
                 src={item.image}
                 alt={item.alt}
+                style={{height: '80vh'}}
             />
         </Paper>
     );
