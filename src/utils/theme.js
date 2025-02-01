@@ -13,7 +13,7 @@ const contentContainer = {
   height: '100%',
   maxWidth: '800px',
   padding: '1rem 2rem',
-  overflowY: 'scroll',
+  overflowY: 'auto',
   color: palette.text,
 };
 
