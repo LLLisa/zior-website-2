@@ -8,8 +8,7 @@ const classes = {
     slideContainer: {
         display: 'flex',
         flexDirection: 'column',
-        height: '100dvh',
-        padding: '1rem',
+        padding: '0.5rem',
     },
     slide: {
         display: 'flex',

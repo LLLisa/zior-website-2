@@ -17,9 +17,16 @@ const contentContainer = {
   color: palette.text,
 };
 
+const slideDeckContainer = {
+  height: '100%',
+  width: '150dvh',
+  overflowX: 'hidden',
+}
+
 const theme = {
   palette,
   contentContainer,
+  slideDeckContainer,
 };
 
 export default theme;

@@ -1,5 +1,6 @@
 import React from "react"
 import SlideDeck from "../components/SlideDeck"
+import theme from "../utils/theme"
 
 const slides = [
     {
@@ -33,11 +34,11 @@ const slides = [
 ];
 
 const DailySlides = () => {
-  return (
-      <div style={{width: '150dvh' }}>
-          <SlideDeck slides={slides} />
-      </div>
-  )
+    return (
+        <div style={theme.slideDeckContainer}>
+            <SlideDeck slides={slides} />
+        </div>
+    )
 }
 
 export default DailySlides

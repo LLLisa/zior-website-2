@@ -1,5 +1,6 @@
 import React from "react"
 import SlideDeck from "../components/SlideDeck"
+import theme from "../utils/theme"
 
 const slides = [
     {
@@ -42,7 +43,7 @@ const slides = [
       image: '/slides/18Months.png',
       alt: '18 months clean',
     },
-    { 
+    {
       image: '/slides/1Year.png',
       alt: '1 year clean',
     },
@@ -78,7 +79,7 @@ const slides = [
 
 const AnniversarySlides = () => {
   return (
-      <div style={{width: '150dvh' }}>
+      <div style={theme.slideDeckContainer}>
           <SlideDeck slides={slides} />
       </div>
   )
