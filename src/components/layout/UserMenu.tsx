@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { LogOut, Settings, Users, UserCircle, LogIn } from "lucide-react";
+import { LogOut, Settings, Users, UserCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,20 +15,9 @@ export function UserMenu() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  if (!user) {
-    return (
-      <Button
-        asChild
-        variant="secondary"
-        size="sm"
-        className="bg-white/15 text-primary-foreground hover:bg-white/25"
-      >
-        <Link to="/login">
-          <LogIn /> Sign in
-        </Link>
-      </Button>
-    );
-  }
+  // The only sign-in entry point lives on the "Service at ZIOR" page, so the
+  // header shows nothing for signed-out visitors.
+  if (!user) return null;
 
   return (
     <DropdownMenu>

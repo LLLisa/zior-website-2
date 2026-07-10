@@ -61,6 +61,11 @@ const PAGES: Array<{ slug: string; title: string; body: string }> = [
     body: `<p>This is the ServiceAtZior section. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>`,
   },
   {
+    slug: "service-at-zior-more",
+    title: "More about service",
+    body: `<p>This is a second editable section for the Service at ZIOR page. Trusted servants can sign in below to edit the site's content.</p>`,
+  },
+  {
     slug: "seventh-tradition",
     title: "7th Tradition",
     body: `<p>This is the SeventhTradition section. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>`,

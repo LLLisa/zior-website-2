@@ -22,10 +22,13 @@ export function EditableArticle({
   slug,
   afterTitle,
   afterBody,
+  hideTitle = false,
 }: {
   slug: string;
   afterTitle?: ReactNode;
   afterBody?: ReactNode;
+  /** Render just the body (no heading) — for secondary editable blocks. */
+  hideTitle?: boolean;
 }) {
   const { user } = useAuth();
   const [page, setPage] = useState<Page | null>(null);
@@ -86,14 +89,16 @@ export function EditableArticle({
   if (editing) {
     return (
       <article className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="page-title">Page title</Label>
-          <Input
-            id="page-title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </div>
+        {!hideTitle && (
+          <div className="space-y-2">
+            <Label htmlFor="page-title">Page title</Label>
+            <Input
+              id="page-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+        )}
         <div className="space-y-2">
           <Label>Content</Label>
           <Suspense
@@ -123,14 +128,24 @@ export function EditableArticle({
 
   return (
     <article className="space-y-4">
-      <div className="flex items-start justify-between gap-4">
-        <h1 className="text-3xl font-bold text-primary">{page.title}</h1>
-        {user && (
-          <Button variant="outline" size="sm" onClick={startEditing}>
-            <Pencil /> Edit
-          </Button>
-        )}
-      </div>
+      {hideTitle ? (
+        user && (
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm" onClick={startEditing}>
+              <Pencil /> Edit
+            </Button>
+          </div>
+        )
+      ) : (
+        <div className="flex items-start justify-between gap-4">
+          <h1 className="text-3xl font-bold text-primary">{page.title}</h1>
+          {user && (
+            <Button variant="outline" size="sm" onClick={startEditing}>
+              <Pencil /> Edit
+            </Button>
+          )}
+        </div>
+      )}
       {afterTitle}
       <SafeHtml html={page.body} />
       {afterBody}
