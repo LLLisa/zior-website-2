@@ -4,7 +4,7 @@
   "description": "Zoom In On Recovery — content-managed meeting site",
   "type": "module",
   "engines": {
-    "node": "20.x"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "docker compose up --build",
