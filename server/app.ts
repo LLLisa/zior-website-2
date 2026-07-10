@@ -4,6 +4,7 @@ import fs from "node:fs";
 import { config } from "./config";
 import { withUser } from "./auth";
 import { authRouter } from "./routes/auth";
+import { filesRouter } from "./routes/files";
 import { pagesRouter } from "./routes/pages";
 import { decksRouter, slidesRouter } from "./routes/decks";
 import { scriptsRouter } from "./routes/scripts";
@@ -17,11 +18,8 @@ export function createApp() {
   app.use(express.json({ limit: "1mb" }));
   app.use(withUser);
 
-  // Uploaded media (slide images, QR code) served statically.
-  app.use(
-    "/uploads",
-    express.static(config.uploadsDir, { maxAge: "1h", index: false }),
-  );
+  // Uploaded media (slide images, QR code) served from Postgres.
+  app.use("/uploads", filesRouter);
 
   app.use("/auth", authRouter);
   app.use("/jftText", jftRouter);

@@ -1,8 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
 import { Router } from "express";
-import { db } from "../db";
-import { config } from "../config";
+import { all, run } from "../db";
+import { storeFile, deleteFile } from "../files";
 import { requireAuth, type AuthRequest } from "../auth";
 import { imageUpload } from "../uploads";
 
@@ -18,35 +16,33 @@ const EDITABLE = new Set([
   "calendar_embed_src",
 ]);
 
-function readSettings(): Record<string, string> {
-  const rows = db.prepare(`SELECT key, value FROM settings`).all() as {
-    key: string;
-    value: string;
-  }[];
+async function readSettings(): Promise<Record<string, string>> {
+  const rows = await all<{ key: string; value: string }>(
+    `SELECT key, value FROM settings`,
+  );
   return Object.fromEntries(rows.map((r) => [r.key, r.value]));
 }
 
 function toDto(s: Record<string, string>) {
-  const { qr_filename, ...rest } = s;
-  return { ...rest, qrUrl: qr_filename ? `/uploads/${qr_filename}` : null };
+  const { qr_file_id, ...rest } = s;
+  return { ...rest, qrUrl: qr_file_id ? `/uploads/${qr_file_id}` : null };
 }
 
-settingsRouter.get("/", (_req, res) => {
-  res.json(toDto(readSettings()));
+settingsRouter.get("/", async (_req, res) => {
+  res.json(toDto(await readSettings()));
 });
 
-settingsRouter.put("/", requireAuth, (req: AuthRequest, res) => {
+settingsRouter.put("/", requireAuth, async (req: AuthRequest, res) => {
   const body = req.body ?? {};
-  const upsert = db.prepare(
-    `INSERT INTO settings (key, value) VALUES (?, ?)
-     ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
-  );
-  db.transaction(() => {
-    for (const key of Object.keys(body)) {
-      if (EDITABLE.has(key)) upsert.run(key, String(body[key] ?? ""));
-    }
-  })();
-  res.json(toDto(readSettings()));
+  for (const key of Object.keys(body)) {
+    if (!EDITABLE.has(key)) continue;
+    await run(
+      `INSERT INTO settings (key, value) VALUES ($1, $2)
+       ON CONFLICT (key) DO UPDATE SET value = excluded.value`,
+      [key, String(body[key] ?? "")],
+    );
+  }
+  res.json(toDto(await readSettings()));
 });
 
 // Replace the QR code image.
@@ -54,21 +50,19 @@ settingsRouter.put(
   "/qr",
   requireAuth,
   imageUpload.single("image"),
-  (req: AuthRequest, res) => {
+  async (req: AuthRequest, res) => {
     if (!req.file) {
       res.status(400).json({ error: "An image file is required." });
       return;
     }
-    const previous = (readSettings().qr_filename || "").trim();
-    db.prepare(
-      `INSERT INTO settings (key, value) VALUES ('qr_filename', ?)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
-    ).run(req.file.filename);
-    if (previous && previous !== req.file.filename) {
-      fs.rmSync(path.join(config.uploadsDir, path.basename(previous)), {
-        force: true,
-      });
-    }
-    res.json(toDto(readSettings()));
+    const previous = (await readSettings()).qr_file_id;
+    const fileId = await storeFile(req.file.mimetype, req.file.buffer);
+    await run(
+      `INSERT INTO settings (key, value) VALUES ('qr_file_id', $1)
+       ON CONFLICT (key) DO UPDATE SET value = excluded.value`,
+      [fileId],
+    );
+    if (previous && previous !== fileId) await deleteFile(previous);
+    res.json(toDto(await readSettings()));
   },
 );

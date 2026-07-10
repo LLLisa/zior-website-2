@@ -1,47 +1,48 @@
-import fs from "node:fs";
-import path from "node:path";
 import { Router } from "express";
 import { PDFDocument } from "pdf-lib";
-import { db, type DeckRow, type SlideRow } from "../db";
-import { config } from "../config";
+import { all, one, run, type DeckRow, type SlideRow } from "../db";
+import { getFile, storeFile, deleteFile } from "../files";
 import { requireAuth, type AuthRequest } from "../auth";
 import { imageUpload } from "../uploads";
 
 export const decksRouter = Router();
 export const slidesRouter = Router();
 
-const uploadPath = (filename: string) =>
-  path.join(config.uploadsDir, path.basename(filename));
-
 function slideDto(s: SlideRow) {
-  return { id: s.id, alt: s.alt, position: s.position, src: `/uploads/${s.filename}` };
+  return {
+    id: s.id,
+    alt: s.alt,
+    position: s.position,
+    src: `/uploads/${s.file_id}`,
+  };
 }
 
-function getDeck(slug: string): DeckRow | undefined {
-  return db.prepare(`SELECT * FROM decks WHERE slug = ?`).get(slug) as
-    | DeckRow
-    | undefined;
+function getDeck(slug: string) {
+  return one<DeckRow>(`SELECT * FROM decks WHERE slug = $1`, [slug]);
 }
 
-function getSlides(slug: string): SlideRow[] {
-  return db
-    .prepare(`SELECT * FROM slides WHERE deck_slug = ? ORDER BY position, id`)
-    .all(slug) as SlideRow[];
+function getSlides(slug: string) {
+  return all<SlideRow>(
+    `SELECT * FROM slides WHERE deck_slug = $1 ORDER BY position, id`,
+    [slug],
+  );
 }
 
-decksRouter.get("/", (_req, res) => {
-  const decks = db.prepare(`SELECT * FROM decks ORDER BY slug`).all() as DeckRow[];
-  res.json(
-    decks.map((d) => ({
+decksRouter.get("/", async (_req, res) => {
+  const decks = await all<DeckRow>(`SELECT * FROM decks ORDER BY slug`);
+  const out = [];
+  for (const d of decks) {
+    out.push({
       slug: d.slug,
       title: d.title,
-      slides: getSlides(d.slug).map(slideDto),
-    })),
-  );
+      slides: (await getSlides(d.slug)).map(slideDto),
+    });
+  }
+  res.json(out);
 });
 
-decksRouter.get("/:slug", (req, res) => {
-  const deck = getDeck(req.params.slug);
+decksRouter.get("/:slug", async (req, res) => {
+  const deck = await getDeck(req.params.slug);
   if (!deck) {
     res.status(404).json({ error: "Deck not found." });
     return;
@@ -49,28 +50,26 @@ decksRouter.get("/:slug", (req, res) => {
   res.json({
     slug: deck.slug,
     title: deck.title,
-    slides: getSlides(deck.slug).map(slideDto),
+    slides: (await getSlides(deck.slug)).map(slideDto),
   });
 });
 
 // Public: download the whole deck as a single PDF (one slide per page).
 decksRouter.get("/:slug/download", async (req, res) => {
-  const deck = getDeck(req.params.slug);
+  const deck = await getDeck(req.params.slug);
   if (!deck) {
     res.status(404).json({ error: "Deck not found." });
     return;
   }
-  const slides = getSlides(deck.slug);
+  const slides = await getSlides(deck.slug);
   const pdf = await PDFDocument.create();
   for (const slide of slides) {
-    const file = uploadPath(slide.filename);
-    if (!fs.existsSync(file)) continue;
-    const bytes = fs.readFileSync(file);
-    const ext = path.extname(slide.filename).toLowerCase();
+    const file = await getFile(slide.file_id);
+    if (!file) continue;
     let img;
     try {
-      if (ext === ".png") img = await pdf.embedPng(bytes);
-      else if (ext === ".jpg" || ext === ".jpeg") img = await pdf.embedJpg(bytes);
+      if (file.mime === "image/png") img = await pdf.embedPng(file.data);
+      else if (file.mime === "image/jpeg") img = await pdf.embedJpg(file.data);
       else continue; // pdf-lib only embeds PNG/JPEG
     } catch {
       continue;
@@ -93,8 +92,8 @@ decksRouter.post(
   "/:slug/slides",
   requireAuth,
   imageUpload.single("image"),
-  (req: AuthRequest, res) => {
-    const deck = getDeck(req.params.slug);
+  async (req: AuthRequest, res) => {
+    const deck = await getDeck(req.params.slug);
     if (!deck) {
       res.status(404).json({ error: "Deck not found." });
       return;
@@ -103,26 +102,23 @@ decksRouter.post(
       res.status(400).json({ error: "An image file is required." });
       return;
     }
-    const next = db
-      .prepare(
-        `SELECT COALESCE(MAX(position) + 1, 0) AS p FROM slides WHERE deck_slug = ?`,
-      )
-      .get(deck.slug) as { p: number };
-    const info = db
-      .prepare(
-        `INSERT INTO slides (deck_slug, filename, alt, position) VALUES (?, ?, ?, ?)`,
-      )
-      .run(deck.slug, req.file.filename, String(req.body?.alt || ""), next.p);
-    const slide = db
-      .prepare(`SELECT * FROM slides WHERE id = ?`)
-      .get(info.lastInsertRowid) as SlideRow;
-    res.status(201).json(slideDto(slide));
+    const fileId = await storeFile(req.file.mimetype, req.file.buffer);
+    const next = await one<{ p: number }>(
+      `SELECT COALESCE(MAX(position) + 1, 0) AS p FROM slides WHERE deck_slug = $1`,
+      [deck.slug],
+    );
+    const slide = await one<SlideRow>(
+      `INSERT INTO slides (deck_slug, file_id, alt, position)
+       VALUES ($1, $2, $3, $4) RETURNING *`,
+      [deck.slug, fileId, String(req.body?.alt || ""), next!.p],
+    );
+    res.status(201).json(slideDto(slide!));
   },
 );
 
 // Reorder a deck's slides given an array of slide ids in the new order.
-decksRouter.put("/:slug/order", requireAuth, (req: AuthRequest, res) => {
-  const deck = getDeck(req.params.slug);
+decksRouter.put("/:slug/order", requireAuth, async (req: AuthRequest, res) => {
+  const deck = await getDeck(req.params.slug);
   if (!deck) {
     res.status(404).json({ error: "Deck not found." });
     return;
@@ -132,43 +128,38 @@ decksRouter.put("/:slug/order", requireAuth, (req: AuthRequest, res) => {
     res.status(400).json({ error: "order must be an array of slide ids." });
     return;
   }
-  const update = db.prepare(
-    `UPDATE slides SET position = ? WHERE id = ? AND deck_slug = ?`,
-  );
-  db.transaction(() => {
-    ids.forEach((id: number, i: number) => update.run(i, id, deck.slug));
-  })();
-  res.json({ slides: getSlides(deck.slug).map(slideDto) });
+  for (let i = 0; i < ids.length; i++) {
+    await run(`UPDATE slides SET position = $1 WHERE id = $2 AND deck_slug = $3`, [
+      i,
+      ids[i],
+      deck.slug,
+    ]);
+  }
+  res.json({ slides: (await getSlides(deck.slug)).map(slideDto) });
 });
 
-slidesRouter.patch("/:id", requireAuth, (req: AuthRequest, res) => {
-  const slide = db
-    .prepare(`SELECT * FROM slides WHERE id = ?`)
-    .get(req.params.id) as SlideRow | undefined;
+slidesRouter.patch("/:id", requireAuth, async (req: AuthRequest, res) => {
+  const slide = await one<SlideRow>(`SELECT * FROM slides WHERE id = $1`, [
+    req.params.id,
+  ]);
   if (!slide) {
     res.status(404).json({ error: "Slide not found." });
     return;
   }
-  db.prepare(`UPDATE slides SET alt = ? WHERE id = ?`).run(
-    String(req.body?.alt ?? ""),
-    slide.id,
-  );
-  res.json(slideDto({ ...slide, alt: String(req.body?.alt ?? "") }));
+  const alt = String(req.body?.alt ?? "");
+  await run(`UPDATE slides SET alt = $1 WHERE id = $2`, [alt, slide.id]);
+  res.json(slideDto({ ...slide, alt }));
 });
 
-slidesRouter.delete("/:id", requireAuth, (req: AuthRequest, res) => {
-  const slide = db
-    .prepare(`SELECT * FROM slides WHERE id = ?`)
-    .get(req.params.id) as SlideRow | undefined;
+slidesRouter.delete("/:id", requireAuth, async (req: AuthRequest, res) => {
+  const slide = await one<SlideRow>(`SELECT * FROM slides WHERE id = $1`, [
+    req.params.id,
+  ]);
   if (!slide) {
     res.status(404).json({ error: "Slide not found." });
     return;
   }
-  db.prepare(`DELETE FROM slides WHERE id = ?`).run(slide.id);
-  // Remove the underlying file unless another slide still references it.
-  const stillUsed = db
-    .prepare(`SELECT 1 FROM slides WHERE filename = ? LIMIT 1`)
-    .get(slide.filename);
-  if (!stillUsed) fs.rmSync(uploadPath(slide.filename), { force: true });
+  await run(`DELETE FROM slides WHERE id = $1`, [slide.id]);
+  await deleteFile(slide.file_id);
   res.json({ ok: true });
 });

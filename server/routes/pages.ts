@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db, type PageRow } from "../db";
+import { one, run, type PageRow } from "../db";
 import { requireAuth, type AuthRequest } from "../auth";
 
 export const pagesRouter = Router();
@@ -14,10 +14,10 @@ function toDto(p: PageRow) {
   };
 }
 
-pagesRouter.get("/:slug", (req, res) => {
-  const page = db
-    .prepare(`SELECT * FROM pages WHERE slug = ?`)
-    .get(req.params.slug) as PageRow | undefined;
+pagesRouter.get("/:slug", async (req, res) => {
+  const page = await one<PageRow>(`SELECT * FROM pages WHERE slug = $1`, [
+    req.params.slug,
+  ]);
   if (!page) {
     res.status(404).json({ error: "Page not found." });
     return;
@@ -26,10 +26,10 @@ pagesRouter.get("/:slug", (req, res) => {
 });
 
 // Any verified user may edit page content.
-pagesRouter.put("/:slug", requireAuth, (req: AuthRequest, res) => {
-  const page = db
-    .prepare(`SELECT slug FROM pages WHERE slug = ?`)
-    .get(req.params.slug);
+pagesRouter.put("/:slug", requireAuth, async (req: AuthRequest, res) => {
+  const page = await one(`SELECT slug FROM pages WHERE slug = $1`, [
+    req.params.slug,
+  ]);
   if (!page) {
     res.status(404).json({ error: "Page not found." });
     return;
@@ -40,12 +40,13 @@ pagesRouter.put("/:slug", requireAuth, (req: AuthRequest, res) => {
     res.status(400).json({ error: "Title is required." });
     return;
   }
-  db.prepare(
-    `UPDATE pages SET title = ?, body_html = ?, updated_at = datetime('now'), updated_by = ?
-     WHERE slug = ?`,
-  ).run(title, body, req.user!.email, req.params.slug);
-  const updated = db
-    .prepare(`SELECT * FROM pages WHERE slug = ?`)
-    .get(req.params.slug) as PageRow;
-  res.json(toDto(updated));
+  await run(
+    `UPDATE pages SET title = $1, body_html = $2, updated_at = now(), updated_by = $3
+     WHERE slug = $4`,
+    [title, body, req.user!.email, req.params.slug],
+  );
+  const updated = await one<PageRow>(`SELECT * FROM pages WHERE slug = $1`, [
+    req.params.slug,
+  ]);
+  res.json(toDto(updated!));
 });

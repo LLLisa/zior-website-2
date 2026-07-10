@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { parse } from "cookie";
-import { db, type UserRow } from "../db";
+import { one, type UserRow } from "../db";
 import { config } from "../config";
 import {
   createLoginToken,
@@ -9,6 +8,7 @@ import {
   destroySession,
   sessionCookie,
   clearCookie,
+  readSessionCookie,
   type AuthRequest,
 } from "../auth";
 import { sendMagicLink } from "../mailer";
@@ -25,11 +25,9 @@ authRouter.post("/login", async (req, res) => {
   const email = String(req.body?.email || "").trim().toLowerCase();
   const ok = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
   if (ok) {
-    const user = db
-      .prepare(`SELECT id FROM users WHERE email = ?`)
-      .get(email);
+    const user = await one(`SELECT id FROM users WHERE email = $1`, [email]);
     if (user) {
-      const token = createLoginToken(email);
+      const token = await createLoginToken(email);
       const url = `${config.appUrl}/auth/verify?token=${token}`;
       try {
         await sendMagicLink(email, url);
@@ -44,30 +42,25 @@ authRouter.post("/login", async (req, res) => {
 });
 
 // Consume the magic link, start a session, and bounce back into the app.
-authRouter.get("/verify", (req, res) => {
+authRouter.get("/verify", async (req, res) => {
   const token = String(req.query.token || "");
-  const email = token ? consumeLoginToken(token) : null;
+  const email = token ? await consumeLoginToken(token) : null;
   if (!email) {
     res.redirect(`${config.appUrl}/login?error=expired`);
     return;
   }
-  const user = db
-    .prepare(`SELECT * FROM users WHERE email = ?`)
-    .get(email) as UserRow | undefined;
+  const user = await one<UserRow>(`SELECT * FROM users WHERE email = $1`, [email]);
   if (!user) {
     res.redirect(`${config.appUrl}/login?error=expired`);
     return;
   }
-  const session = createSession(user.id);
+  const session = await createSession(user.id);
   res.setHeader("Set-Cookie", sessionCookie(session));
   res.redirect(`${config.appUrl}/`);
 });
 
-authRouter.post("/logout", (req: AuthRequest, res) => {
-  const raw = req.headers.cookie
-    ? parse(req.headers.cookie)[config.cookieName]
-    : undefined;
-  destroySession(raw);
+authRouter.post("/logout", async (req: AuthRequest, res) => {
+  await destroySession(readSessionCookie(req));
   res.setHeader("Set-Cookie", clearCookie());
   res.json({ ok: true });
 });

@@ -1,15 +1,7 @@
-import crypto from "node:crypto";
-import path from "node:path";
 import multer from "multer";
-import { config } from "./config";
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, config.uploadsDir),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `${crypto.randomBytes(16).toString("hex")}${ext}`);
-  },
-});
+// Files are kept in memory then written to Postgres as BYTEA — no disk needed.
+const storage = multer.memoryStorage();
 
 export const imageUpload = multer({
   storage,

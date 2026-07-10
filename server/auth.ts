@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { serialize, parse } from "cookie";
 import type { Request, Response, NextFunction } from "express";
-import { db, type UserRow } from "./db";
+import { one, run, type UserRow } from "./db";
 import { config } from "./config";
 
 /** Keyed hash so a leaked DB of token/session hashes can't be used to forge. */
@@ -15,54 +15,58 @@ function randomToken(): string {
 
 // ---- Magic-link login tokens ------------------------------------------------
 
-export function createLoginToken(email: string): string {
+export async function createLoginToken(email: string): Promise<string> {
   const raw = randomToken();
-  db.prepare(
-    `INSERT INTO login_tokens (email, token_hash, expires_at) VALUES (?, ?, ?)`,
-  ).run(email, hash(raw), Date.now() + config.loginTokenTtlMs);
+  await run(
+    `INSERT INTO login_tokens (email, token_hash, expires_at) VALUES ($1, $2, $3)`,
+    [email, hash(raw), Date.now() + config.loginTokenTtlMs],
+  );
   return raw;
 }
 
 /** Validate + single-use consume a magic-link token, returning the email. */
-export function consumeLoginToken(raw: string): string | null {
-  const row = db
-    .prepare(
-      `SELECT id, email, expires_at, used_at FROM login_tokens WHERE token_hash = ?`,
-    )
-    .get(hash(raw)) as
-    | { id: number; email: string; expires_at: number; used_at: number | null }
-    | undefined;
+export async function consumeLoginToken(raw: string): Promise<string | null> {
+  const row = await one<{
+    id: number;
+    email: string;
+    expires_at: number;
+    used_at: number | null;
+  }>(`SELECT id, email, expires_at, used_at FROM login_tokens WHERE token_hash = $1`, [
+    hash(raw),
+  ]);
   if (!row || row.used_at || row.expires_at < Date.now()) return null;
-  db.prepare(`UPDATE login_tokens SET used_at = ? WHERE id = ?`).run(
+  await run(`UPDATE login_tokens SET used_at = $1 WHERE id = $2`, [
     Date.now(),
     row.id,
-  );
+  ]);
   return row.email;
 }
 
 // ---- Sessions ---------------------------------------------------------------
 
-export function createSession(userId: number): string {
+export async function createSession(userId: number): Promise<string> {
   const raw = randomToken();
-  db.prepare(
-    `INSERT INTO sessions (id, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)`,
-  ).run(hash(raw), userId, Date.now() + config.sessionTtlMs, Date.now());
+  await run(
+    `INSERT INTO sessions (id, user_id, expires_at, created_at) VALUES ($1, $2, $3, $4)`,
+    [hash(raw), userId, Date.now() + config.sessionTtlMs, Date.now()],
+  );
   return raw;
 }
 
-export function userForSession(raw: string | undefined): UserRow | null {
+export async function userForSession(
+  raw: string | undefined,
+): Promise<UserRow | null> {
   if (!raw) return null;
-  const row = db
-    .prepare(
-      `SELECT u.* FROM sessions s JOIN users u ON u.id = s.user_id
-       WHERE s.id = ? AND s.expires_at > ?`,
-    )
-    .get(hash(raw), Date.now()) as UserRow | undefined;
+  const row = await one<UserRow>(
+    `SELECT u.* FROM sessions s JOIN users u ON u.id = s.user_id
+     WHERE s.id = $1 AND s.expires_at > $2`,
+    [hash(raw), Date.now()],
+  );
   return row ?? null;
 }
 
-export function destroySession(raw: string | undefined) {
-  if (raw) db.prepare(`DELETE FROM sessions WHERE id = ?`).run(hash(raw));
+export async function destroySession(raw: string | undefined) {
+  if (raw) await run(`DELETE FROM sessions WHERE id = $1`, [hash(raw)]);
 }
 
 // ---- Cookies ----------------------------------------------------------------
@@ -87,7 +91,7 @@ export function clearCookie(): string {
   });
 }
 
-function readSessionCookie(req: Request): string | undefined {
+export function readSessionCookie(req: Request): string | undefined {
   const header = req.headers.cookie;
   if (!header) return undefined;
   return parse(header)[config.cookieName];
@@ -100,9 +104,17 @@ export interface AuthRequest extends Request {
 }
 
 /** Attaches req.user when a valid session exists; never blocks. */
-export function withUser(req: AuthRequest, _res: Response, next: NextFunction) {
-  const user = userForSession(readSessionCookie(req));
-  if (user) req.user = user;
+export async function withUser(
+  req: AuthRequest,
+  _res: Response,
+  next: NextFunction,
+) {
+  try {
+    const user = await userForSession(readSessionCookie(req));
+    if (user) req.user = user;
+  } catch (err) {
+    console.error("Session lookup failed:", err);
+  }
   next();
 }
 

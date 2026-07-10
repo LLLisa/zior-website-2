@@ -3,13 +3,37 @@ import fs from "node:fs";
 
 const root = process.cwd();
 
-// Load .env if present (Node >= 20.12). No external dependency needed.
+// Load .env if present (no external dependency). Values in the project .env take
+// precedence over inherited shell vars so local dev is self-contained. There is
+// no .env on Heroku, so real platform env vars are used there.
 try {
   const envFile = path.join(root, ".env");
-  if (fs.existsSync(envFile)) process.loadEnvFile(envFile);
+  if (fs.existsSync(envFile)) {
+    for (const raw of fs.readFileSync(envFile, "utf8").split("\n")) {
+      const line = raw.trim();
+      if (!line || line.startsWith("#")) continue;
+      const eq = line.indexOf("=");
+      if (eq === -1) continue;
+      const key = line.slice(0, eq).trim();
+      let val = line.slice(eq + 1).trim();
+      if (
+        (val.startsWith('"') && val.endsWith('"')) ||
+        (val.startsWith("'") && val.endsWith("'"))
+      ) {
+        val = val.slice(1, -1);
+      }
+      process.env[key] = val;
+    }
+  }
 } catch {
-  // process.loadEnvFile unavailable or file unreadable — rely on real env vars.
+  // .env unreadable — rely on real env vars.
 }
+
+const databaseUrl =
+  process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:5432/zior_db";
+
+// Heroku Postgres (and most managed providers) require SSL; local ones don't.
+const isLocalDb = /@(localhost|127\.0\.0\.1)/.test(databaseUrl);
 
 export const config = {
   root,
@@ -21,10 +45,10 @@ export const config = {
   resendApiKey: process.env.RESEND_API_KEY || "",
   fromEmail: process.env.FROM_EMAIL || "ZIOR <login@zoominonrecovery.org>",
 
-  // Filesystem layout.
-  dataDir: path.join(root, "data"),
-  uploadsDir: path.join(root, "data", "uploads"),
-  dbPath: path.join(root, "data", "zior.db"),
+  databaseUrl,
+  dbSsl: isLocalDb ? false : { rejectUnauthorized: false },
+
+  // Filesystem layout (assets bundled with the app; no runtime writes needed).
   seedAssetsDir: path.join(root, "seed-assets"),
   distDir: path.join(root, "dist"),
   secretsDir: path.join(root, "secrets"),
@@ -34,12 +58,6 @@ export const config = {
   sessionTtlMs: 30 * 24 * 60 * 60 * 1000, // session cookie lasts 30 days
   cookieName: "zior_session",
 };
-
-export function ensureDirs() {
-  for (const dir of [config.dataDir, config.uploadsDir]) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-}
 
 if (config.isProd && config.sessionSecret === "dev-insecure-change-me") {
   throw new Error(

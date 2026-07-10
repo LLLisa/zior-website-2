@@ -9,19 +9,24 @@ and the scripts.
 
 - **Client:** Vite + React + TypeScript + Tailwind CSS v4 + shadcn/ui (Radix
   primitives, vendored in `src/components/ui`). Rich-text editing with Tiptap.
-- **Server:** Express + better-sqlite3 (single-file database). Passwordless
-  **magic-link** auth (no OAuth), email via Resend. PDF generation with pdf-lib.
+- **Server:** Express + Postgres (via `pg`, no ORM). Passwordless **magic-link**
+  auth (no OAuth), email via Resend. PDF generation with pdf-lib. Uploaded
+  images/PDFs are stored as binary in Postgres, so the app needs no writable
+  filesystem (works on ephemeral hosts like Heroku).
 - **No ORM, no Redux, no Webpack, no Moment** — minimal dependencies.
 
 ## Getting started
 
+Requires a Postgres database. Point `DATABASE_URL` at it (see `.env`).
+
 ```bash
 npm install
-cp .env.example .env      # then edit values
+cp .env.example .env      # then edit values, incl. DATABASE_URL
 npm run dev               # client on :5173, API on :1953 (client proxies to it)
 ```
 
-Open http://localhost:5173.
+Open http://localhost:5173. The schema is created and seeded automatically on
+first start.
 
 ### First sign-in
 
@@ -36,25 +41,30 @@ See `.env.example`. Key ones:
 
 | Variable         | Purpose                                                        |
 | ---------------- | ------------------------------------------------------------- |
+| `DATABASE_URL`   | Postgres connection string (provided automatically on Heroku). |
 | `ADMIN_EMAIL`    | Seeded as the initial admin on first run.                     |
 | `SESSION_SECRET` | Signs session/login tokens. **Required** in production.       |
 | `APP_URL`        | Base URL used to build magic-link URLs (must match the browser). |
 | `RESEND_API_KEY` | Resend key. If unset, magic links are logged to the console.  |
 | `FROM_EMAIL`     | From address for magic-link emails.                           |
 
+Locally, values in the project `.env` take precedence over inherited shell
+variables. There is no `.env` on Heroku, so its config vars are used there.
+
 ## Content model
 
-The SQLite database (`data/zior.db`, created and seeded automatically) holds:
+Postgres tables (created and seeded automatically on first start):
 
 - **pages** — rich-text pages (Home, About, For the Newcomer, Helpful Links,
   Service at ZIOR, 7th Tradition).
 - **decks / slides** — the Daily and Anniversary slideshows (images).
 - **scripts** — the Daily and Anniversary script PDFs.
 - **settings** — Zoom link, meeting time/timezone, calendar embed, QR image.
+- **files** — uploaded binaries (slide images, script PDFs, QR) stored as `bytea`.
 - **users / sessions / login_tokens** — auth.
 
-Uploaded images/PDFs live in `data/uploads/`. The `data/` directory is
-git-ignored; it is seeded from `seed-assets/` on first run.
+Binary content is seeded from `seed-assets/` into the `files` table on first run,
+so no writable filesystem is required at runtime.
 
 ## Permissions
 
@@ -78,11 +88,29 @@ npm run build     # type-checks and builds the SPA into dist/
 npm start         # NODE_ENV=production; serves dist/ + API
 ```
 
-In production the server terminates **HTTPS** using the certificate and key in
-`./secrets` (`www_zoominonrecovery_org.pem` / `.key`). If those files are
-absent it falls back to plain HTTP (put it behind a TLS-terminating proxy).
-Set `SESSION_SECRET`, `APP_URL` (your public https URL), `ADMIN_EMAIL`, and the
-Resend variables in the environment.
+Set `DATABASE_URL`, `SESSION_SECRET`, `APP_URL` (your public https URL),
+`ADMIN_EMAIL`, and the Resend variables in the environment.
+
+If TLS certificates exist in `./secrets` (`www_zoominonrecovery_org.pem` /
+`.key`) and none are provided by the platform, the server terminates **HTTPS**
+itself; otherwise it serves plain HTTP behind the platform's TLS.
+
+### Heroku
+
+The app is Heroku-ready: it uses `DATABASE_URL` from the Heroku Postgres add-on,
+stores uploads in Postgres (no disk needed), reads `PORT` from the platform, and
+lets Heroku terminate TLS. `heroku-postbuild` builds the SPA and the `Procfile`
+runs the server.
+
+```bash
+heroku config:set \
+  SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))") \
+  APP_URL=https://www.zoominonrecovery.org \
+  ADMIN_EMAIL=you@example.com \
+  RESEND_API_KEY=... "FROM_EMAIL=ZIOR <login@zoominonrecovery.org>" \
+  -a zoominonrecovery
+git push heroku rework-modern-stack:main
+```
 
 ## Scripts
 

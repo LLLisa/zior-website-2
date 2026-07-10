@@ -1,75 +1,116 @@
-import Database from "better-sqlite3";
-import { config, ensureDirs } from "./config";
+import pg from "pg";
+import { config } from "./config";
 
-ensureDirs();
+// bigint (int8) columns hold epoch-millisecond timestamps; parse them as
+// numbers instead of the default strings.
+pg.types.setTypeParser(20, (v) => (v === null ? null : Number(v)));
 
-export const db = new Database(config.dbPath);
-db.pragma("journal_mode = WAL");
-db.pragma("foreign_keys = ON");
+export const pool = new pg.Pool({
+  connectionString: config.databaseUrl,
+  ssl: config.dbSsl,
+  max: 10,
+});
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id         INTEGER PRIMARY KEY,
-    email      TEXT NOT NULL UNIQUE,
-    is_admin   INTEGER NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
+// Managed Postgres (Heroku) drops idle connections; without this handler the
+// resulting 'error' event on an idle client would crash the process.
+pool.on("error", (err) => {
+  console.error("Unexpected idle Postgres client error:", err.message);
+});
 
-  CREATE TABLE IF NOT EXISTS login_tokens (
-    id         INTEGER PRIMARY KEY,
-    email      TEXT NOT NULL,
-    token_hash TEXT NOT NULL UNIQUE,
-    expires_at INTEGER NOT NULL,
-    used_at    INTEGER
-  );
+export async function all<T>(text: string, params: unknown[] = []): Promise<T[]> {
+  const res = await pool.query(text, params);
+  return res.rows as T[];
+}
 
-  -- id is the SHA-256 hash of the random token held in the session cookie.
-  CREATE TABLE IF NOT EXISTS sessions (
-    id         TEXT PRIMARY KEY,
-    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    expires_at INTEGER NOT NULL,
-    created_at INTEGER NOT NULL
-  );
+export async function one<T>(
+  text: string,
+  params: unknown[] = [],
+): Promise<T | undefined> {
+  const res = await pool.query(text, params);
+  return res.rows[0] as T | undefined;
+}
 
-  CREATE TABLE IF NOT EXISTS pages (
-    slug       TEXT PRIMARY KEY,
-    title      TEXT NOT NULL,
-    body_html  TEXT NOT NULL,
-    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-    updated_by TEXT
-  );
+export async function run(text: string, params: unknown[] = []): Promise<void> {
+  await pool.query(text, params);
+}
 
-  CREATE TABLE IF NOT EXISTS decks (
-    slug  TEXT PRIMARY KEY,
-    title TEXT NOT NULL
-  );
+export async function initDb() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id         SERIAL PRIMARY KEY,
+      email      TEXT NOT NULL UNIQUE,
+      is_admin   BOOLEAN NOT NULL DEFAULT FALSE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
 
-  CREATE TABLE IF NOT EXISTS slides (
-    id        INTEGER PRIMARY KEY,
-    deck_slug TEXT NOT NULL REFERENCES decks(slug) ON DELETE CASCADE,
-    filename  TEXT NOT NULL,
-    alt       TEXT NOT NULL DEFAULT '',
-    position  INTEGER NOT NULL
-  );
+    CREATE TABLE IF NOT EXISTS login_tokens (
+      id         SERIAL PRIMARY KEY,
+      email      TEXT NOT NULL,
+      token_hash TEXT NOT NULL UNIQUE,
+      expires_at BIGINT NOT NULL,
+      used_at    BIGINT
+    );
 
-  CREATE TABLE IF NOT EXISTS scripts (
-    slug       TEXT PRIMARY KEY,
-    title      TEXT NOT NULL,
-    filename   TEXT,
-    updated_at TEXT,
-    updated_by TEXT
-  );
+    CREATE TABLE IF NOT EXISTS sessions (
+      id         TEXT PRIMARY KEY,
+      user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      expires_at BIGINT NOT NULL,
+      created_at BIGINT NOT NULL
+    );
 
-  CREATE TABLE IF NOT EXISTS settings (
-    key   TEXT PRIMARY KEY,
-    value TEXT NOT NULL
-  );
-`);
+    -- Uploaded binaries (slide images, script PDFs, QR code) live here so the
+    -- app needs no writable filesystem (Heroku dynos are ephemeral).
+    CREATE TABLE IF NOT EXISTS files (
+      id         TEXT PRIMARY KEY,
+      mime       TEXT NOT NULL,
+      data       BYTEA NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    CREATE TABLE IF NOT EXISTS pages (
+      slug       TEXT PRIMARY KEY,
+      title      TEXT NOT NULL,
+      body_html  TEXT NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_by TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS decks (
+      slug  TEXT PRIMARY KEY,
+      title TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS slides (
+      id        SERIAL PRIMARY KEY,
+      deck_slug TEXT NOT NULL REFERENCES decks(slug) ON DELETE CASCADE,
+      file_id   TEXT NOT NULL REFERENCES files(id),
+      alt       TEXT NOT NULL DEFAULT '',
+      position  INTEGER NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS scripts (
+      slug       TEXT PRIMARY KEY,
+      title      TEXT NOT NULL,
+      file_id    TEXT REFERENCES files(id),
+      updated_at TIMESTAMPTZ,
+      updated_by TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS settings (
+      key   TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
+  `);
+
+  // Keep the table count low (Heroku essential-0 caps rows): drop expired auth rows.
+  await pool.query(`DELETE FROM sessions WHERE expires_at < $1`, [Date.now()]);
+  await pool.query(`DELETE FROM login_tokens WHERE expires_at < $1`, [Date.now()]);
+}
 
 export type UserRow = {
   id: number;
   email: string;
-  is_admin: number;
+  is_admin: boolean;
   created_at: string;
 };
 
@@ -86,7 +127,7 @@ export type DeckRow = { slug: string; title: string };
 export type SlideRow = {
   id: number;
   deck_slug: string;
-  filename: string;
+  file_id: string;
   alt: string;
   position: number;
 };
@@ -94,7 +135,7 @@ export type SlideRow = {
 export type ScriptRow = {
   slug: string;
   title: string;
-  filename: string | null;
+  file_id: string | null;
   updated_at: string | null;
   updated_by: string | null;
 };

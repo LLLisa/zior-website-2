@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db, type UserRow } from "../db";
+import { all, one, run, type UserRow } from "../db";
 import { requireAuth, type AuthRequest } from "../auth";
 
 export const usersRouter = Router();
@@ -13,18 +13,15 @@ function dto(u: UserRow) {
   };
 }
 
-function getUser(id: number | string): UserRow | undefined {
-  return db.prepare(`SELECT * FROM users WHERE id = ?`).get(id) as
-    | UserRow
-    | undefined;
+function getUser(id: number | string) {
+  return one<UserRow>(`SELECT * FROM users WHERE id = $1`, [id]);
 }
 
-function adminCount(): number {
-  return (
-    db.prepare(`SELECT COUNT(*) AS c FROM users WHERE is_admin = 1`).get() as {
-      c: number;
-    }
-  ).c;
+async function adminCount(): Promise<number> {
+  const row = await one<{ count: string }>(
+    `SELECT COUNT(*) FROM users WHERE is_admin = TRUE`,
+  );
+  return Number(row?.count ?? 0);
 }
 
 // Non-admins may only act on non-admin users.
@@ -34,12 +31,12 @@ function canManage(actor: UserRow, target: UserRow): boolean {
 
 usersRouter.use(requireAuth);
 
-usersRouter.get("/", (_req, res) => {
-  const users = db.prepare(`SELECT * FROM users ORDER BY email`).all() as UserRow[];
+usersRouter.get("/", async (_req, res) => {
+  const users = await all<UserRow>(`SELECT * FROM users ORDER BY email`);
   res.json(users.map(dto));
 });
 
-usersRouter.post("/", (req: AuthRequest, res) => {
+usersRouter.post("/", async (req: AuthRequest, res) => {
   const actor = req.user!;
   const email = String(req.body?.email || "").trim().toLowerCase();
   const isAdmin = !!req.body?.isAdmin;
@@ -51,20 +48,21 @@ usersRouter.post("/", (req: AuthRequest, res) => {
     res.status(403).json({ error: "Only admins can create admin users." });
     return;
   }
-  const exists = db.prepare(`SELECT 1 FROM users WHERE email = ?`).get(email);
+  const exists = await one(`SELECT 1 FROM users WHERE email = $1`, [email]);
   if (exists) {
     res.status(409).json({ error: "A user with that email already exists." });
     return;
   }
-  const info = db
-    .prepare(`INSERT INTO users (email, is_admin) VALUES (?, ?)`)
-    .run(email, isAdmin ? 1 : 0);
-  res.status(201).json(dto(getUser(Number(info.lastInsertRowid))!));
+  const user = await one<UserRow>(
+    `INSERT INTO users (email, is_admin) VALUES ($1, $2) RETURNING *`,
+    [email, isAdmin],
+  );
+  res.status(201).json(dto(user!));
 });
 
-usersRouter.patch("/:id", (req: AuthRequest, res) => {
+usersRouter.patch("/:id", async (req: AuthRequest, res) => {
   const actor = req.user!;
-  const target = getUser(req.params.id);
+  const target = await getUser(req.params.id);
   if (!target) {
     res.status(404).json({ error: "User not found." });
     return;
@@ -79,21 +77,18 @@ usersRouter.patch("/:id", (req: AuthRequest, res) => {
       res.status(403).json({ error: "Only admins can change admin status." });
       return;
     }
-    if (target.is_admin && !isAdmin && adminCount() <= 1) {
+    if (target.is_admin && !isAdmin && (await adminCount()) <= 1) {
       res.status(400).json({ error: "You can't remove the last admin." });
       return;
     }
-    db.prepare(`UPDATE users SET is_admin = ? WHERE id = ?`).run(
-      isAdmin ? 1 : 0,
-      target.id,
-    );
+    await run(`UPDATE users SET is_admin = $1 WHERE id = $2`, [isAdmin, target.id]);
   }
-  res.json(dto(getUser(target.id)!));
+  res.json(dto((await getUser(target.id))!));
 });
 
-usersRouter.delete("/:id", (req: AuthRequest, res) => {
+usersRouter.delete("/:id", async (req: AuthRequest, res) => {
   const actor = req.user!;
-  const target = getUser(req.params.id);
+  const target = await getUser(req.params.id);
   if (!target) {
     res.status(404).json({ error: "User not found." });
     return;
@@ -102,10 +97,10 @@ usersRouter.delete("/:id", (req: AuthRequest, res) => {
     res.status(403).json({ error: "You can only manage non-admin users." });
     return;
   }
-  if (target.is_admin && adminCount() <= 1) {
+  if (target.is_admin && (await adminCount()) <= 1) {
     res.status(400).json({ error: "You can't delete the last admin." });
     return;
   }
-  db.prepare(`DELETE FROM users WHERE id = ?`).run(target.id);
+  await run(`DELETE FROM users WHERE id = $1`, [target.id]);
   res.json({ ok: true });
 });

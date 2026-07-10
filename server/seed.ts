@@ -1,16 +1,22 @@
 import fs from "node:fs";
 import path from "node:path";
-import { db } from "./db";
+import { one, run } from "./db";
+import { storeFile } from "./files";
 import { config } from "./config";
 
-/** Copy a seed asset into the uploads dir (idempotent) and return its basename. */
-function seedFile(relFromSeed: string, destName: string): string {
+function mimeFor(file: string): string {
+  const ext = path.extname(file).toLowerCase();
+  if (ext === ".png") return "image/png";
+  if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
+  if (ext === ".pdf") return "application/pdf";
+  return "application/octet-stream";
+}
+
+/** Store a bundled seed asset into the files table; returns its file id or null. */
+async function seedFile(relFromSeed: string): Promise<string | null> {
   const src = path.join(config.seedAssetsDir, relFromSeed);
-  const dest = path.join(config.uploadsDir, destName);
-  if (fs.existsSync(src) && !fs.existsSync(dest)) {
-    fs.copyFileSync(src, dest);
-  }
-  return destName;
+  if (!fs.existsSync(src)) return null;
+  return storeFile(mimeFor(src), fs.readFileSync(src));
 }
 
 const PAGES: Array<{ slug: string; title: string; body: string }> = [
@@ -70,7 +76,6 @@ const SETTINGS: Record<string, string> = {
   meeting_tz: "America/New_York",
   calendar_embed_src:
     "https://calendar.google.com/calendar/embed?src=0994f22fd2f97cedaa5213db3b2b8ab0f2325b0ec366356ec8aefc4dfd4b8f9f%40group.calendar.google.com&ctz=America%2FNew_York",
-  qr_filename: "", // filled in during seeding below
 };
 
 const DAILY_SLIDES = [
@@ -97,73 +102,81 @@ const ANNIVERSARY_EXTRA = [
   ["welcomeHome.png", "Welcome to the family"],
 ];
 
-export function seed() {
-  const insertPage = db.prepare(
-    `INSERT OR IGNORE INTO pages (slug, title, body_html, updated_by)
-     VALUES (@slug, @title, @body, 'seed')`,
-  );
-  for (const p of PAGES) insertPage.run(p);
-
-  // Settings: QR image gets copied into uploads.
-  SETTINGS.qr_filename = fs.existsSync(
-    path.join(config.seedAssetsDir, "zoomQrCode.png"),
-  )
-    ? seedFile("zoomQrCode.png", "zoomQrCode.png")
-    : "";
-  const insertSetting = db.prepare(
-    `INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)`,
-  );
-  for (const [k, v] of Object.entries(SETTINGS)) insertSetting.run(k, v);
-
-  // Decks/slides/scripts are only seeded on a fresh database so we never
-  // resurrect content an editor later deleted.
-  const deckCount = db.prepare(`SELECT COUNT(*) AS c FROM decks`).get() as {
-    c: number;
-  };
-  if (deckCount.c === 0) {
-    const insertDeck = db.prepare(
-      `INSERT INTO decks (slug, title) VALUES (?, ?)`,
+export async function seed() {
+  for (const p of PAGES) {
+    await run(
+      `INSERT INTO pages (slug, title, body_html, updated_by)
+       VALUES ($1, $2, $3, 'seed') ON CONFLICT (slug) DO NOTHING`,
+      [p.slug, p.title, p.body],
     );
-    insertDeck.run("daily", "Daily Meeting Slides");
-    insertDeck.run("anniversary", "Anniversary Meeting Slides");
-
-    const insertSlide = db.prepare(
-      `INSERT INTO slides (deck_slug, filename, alt, position)
-       VALUES (@deck, @filename, @alt, @position)`,
-    );
-    const seedDeck = (deck: string, list: string[][]) => {
-      list.forEach(([file, alt], i) => {
-        const filename = seedFile(path.join("slides", file), file);
-        insertSlide.run({ deck, filename, alt, position: i });
-      });
-    };
-    seedDeck("daily", DAILY_SLIDES);
-    seedDeck("anniversary", [...DAILY_SLIDES, ...ANNIVERSARY_EXTRA]);
   }
 
-  const insertScript = db.prepare(
-    `INSERT OR IGNORE INTO scripts (slug, title, filename, updated_at, updated_by)
-     VALUES (?, ?, ?, datetime('now'), 'seed')`,
-  );
-  insertScript.run(
-    "daily",
-    "Daily Meeting Script",
-    seedFile(path.join("scripts", "currentDailyScript.pdf"), "currentDailyScript.pdf"),
-  );
-  insertScript.run(
-    "anniversary",
-    "Anniversary Meeting Script",
-    seedFile(
-      path.join("scripts", "currentAnniversaryScript.pdf"),
-      "currentAnniversaryScript.pdf",
-    ),
-  );
+  for (const [k, v] of Object.entries(SETTINGS)) {
+    await run(
+      `INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO NOTHING`,
+      [k, v],
+    );
+  }
 
-  // Bootstrap the initial admin from ADMIN_EMAIL.
+  // QR image — only seed if not already set.
+  const qr = await one(`SELECT value FROM settings WHERE key = 'qr_file_id'`);
+  if (!qr) {
+    const qrId = await seedFile("zoomQrCode.png");
+    if (qrId) {
+      await run(`INSERT INTO settings (key, value) VALUES ('qr_file_id', $1)`, [
+        qrId,
+      ]);
+    }
+  }
+
+  // Decks/slides only on a fresh database so deletions aren't resurrected.
+  const deckCount = await one<{ count: string }>(`SELECT COUNT(*) FROM decks`);
+  if (Number(deckCount?.count ?? 0) === 0) {
+    await run(`INSERT INTO decks (slug, title) VALUES ($1, $2)`, [
+      "daily",
+      "Daily Meeting Slides",
+    ]);
+    await run(`INSERT INTO decks (slug, title) VALUES ($1, $2)`, [
+      "anniversary",
+      "Anniversary Meeting Slides",
+    ]);
+
+    const seedDeck = async (deck: string, list: string[][]) => {
+      for (let i = 0; i < list.length; i++) {
+        const [file, alt] = list[i];
+        const fileId = await seedFile(path.join("slides", file));
+        if (!fileId) continue;
+        await run(
+          `INSERT INTO slides (deck_slug, file_id, alt, position)
+           VALUES ($1, $2, $3, $4)`,
+          [deck, fileId, alt, i],
+        );
+      }
+    };
+    await seedDeck("daily", DAILY_SLIDES);
+    await seedDeck("anniversary", [...DAILY_SLIDES, ...ANNIVERSARY_EXTRA]);
+  }
+
+  const scripts: Array<[string, string, string]> = [
+    ["daily", "Daily Meeting Script", "currentDailyScript.pdf"],
+    ["anniversary", "Anniversary Meeting Script", "currentAnniversaryScript.pdf"],
+  ];
+  for (const [slug, title, file] of scripts) {
+    const existing = await one(`SELECT slug FROM scripts WHERE slug = $1`, [slug]);
+    if (existing) continue;
+    const fileId = await seedFile(path.join("scripts", file));
+    await run(
+      `INSERT INTO scripts (slug, title, file_id, updated_at, updated_by)
+       VALUES ($1, $2, $3, now(), 'seed')`,
+      [slug, title, fileId],
+    );
+  }
+
   if (config.adminEmail) {
-    db.prepare(
-      `INSERT INTO users (email, is_admin) VALUES (?, 1)
-       ON CONFLICT(email) DO UPDATE SET is_admin = 1`,
-    ).run(config.adminEmail);
+    await run(
+      `INSERT INTO users (email, is_admin) VALUES ($1, TRUE)
+       ON CONFLICT (email) DO UPDATE SET is_admin = TRUE`,
+      [config.adminEmail],
+    );
   }
 }

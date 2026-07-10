@@ -3,16 +3,20 @@ import path from "node:path";
 import http from "node:http";
 import https from "node:https";
 import { config } from "./config";
+import { initDb } from "./db";
 import { seed } from "./seed";
 import { createApp } from "./app";
 
-seed();
+await initDb();
+await seed();
 const app = createApp();
 
 const keyPath = path.join(config.secretsDir, "www_zoominonrecovery_org.key");
 const certPath = path.join(config.secretsDir, "www_zoominonrecovery_org.pem");
 const haveCerts = fs.existsSync(keyPath) && fs.existsSync(certPath);
 
+// On Heroku (and most PaaS) TLS is terminated by the platform, so only use the
+// bundled certs when they exist and we're the public TLS endpoint.
 if (config.isProd && haveCerts) {
   https
     .createServer(
@@ -23,14 +27,9 @@ if (config.isProd && haveCerts) {
       console.log(`ZIOR (https) listening on port ${config.port}`),
     );
 } else {
-  if (config.isProd) {
-    console.warn(
-      "Production mode but no TLS certificates found in ./secrets — serving plain HTTP.",
-    );
-  }
   http
     .createServer(app)
     .listen(config.port, () =>
-      console.log(`ZIOR listening on http://localhost:${config.port}`),
+      console.log(`ZIOR listening on port ${config.port}`),
     );
 }
