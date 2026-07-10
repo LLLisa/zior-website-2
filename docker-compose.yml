@@ -1,0 +1,75 @@
+# Local development stack: Postgres + Express API + Vite client, fully
+# containerized so `npm run dev` (docker compose up) is the one reliable way to
+# start everything. The project name is pinned to "zior" so containers,
+# networks, and volumes never collide with other Postgres projects on this
+# machine.
+name: zior
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: zior_db
+    # Host 5433 avoids the default 5432 that other local projects bind. The app
+    # containers reach Postgres over the internal network at db:5432; this
+    # mapping is only for connecting from the host (psql, a GUI, etc.).
+    ports:
+      - "5433:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d zior_db"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: npm run dev:server
+    environment:
+      # Reach Postgres via the compose network, not localhost.
+      DATABASE_URL: postgres://postgres:postgres@db:5432/zior_db
+      # The dockerized Postgres speaks plain TCP (no SSL).
+      DATABASE_SSL: "false"
+      PORT: "1953"
+      APP_URL: http://localhost:1953
+      SESSION_SECRET: dev-insecure-change-me
+      # Pulled from your .env (compose substitutes these); blank if unset.
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+    # No host port: the API is reached through the client's Vite proxy at
+    # http://localhost:1953/api (etc.). It listens on 1953 inside the network.
+    volumes:
+      - .:/app
+      # Keep the image's installed node_modules instead of the host's.
+      - server-node-modules:/app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: npm run dev:client
+    environment:
+      # Serve the app on 1953 (same port as production) and proxy /api, /auth,
+      # etc. to the API container.
+      CLIENT_PORT: "1953"
+      API_PROXY_TARGET: http://server:1953
+    ports:
+      - "1953:1953"
+    volumes:
+      - .:/app
+      - client-node-modules:/app/node_modules
+    depends_on:
+      - server
+
+volumes:
+  db-data:
+  server-node-modules:
+  client-node-modules:

@@ -1,0 +1,13 @@
+# Development image for the Vite client and the tsx/Express server.
+# Source is bind-mounted at runtime (see docker-compose.yml); only the
+# dependency install lives in the image so `npm ci` is cached between runs.
+FROM node:20-slim
+
+WORKDIR /app
+
+# Install deps first so this layer is reused unless package*.json changes.
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# node_modules is provided by a named volume at runtime; the source tree is
+# bind-mounted over /app. The command is supplied by docker-compose.yml.

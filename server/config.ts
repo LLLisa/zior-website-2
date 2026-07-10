@@ -3,9 +3,10 @@ import fs from "node:fs";
 
 const root = process.cwd();
 
-// Load .env if present (no external dependency). Values in the project .env take
-// precedence over inherited shell vars so local dev is self-contained. There is
-// no .env on Heroku, so real platform env vars are used there.
+// Load .env if present (no external dependency). Real environment variables
+// take precedence — .env only fills in gaps — so that Docker/Heroku/shell env
+// stays authoritative (e.g. the DB host Compose injects isn't overridden by a
+// stale .env). There is no .env on Heroku, so real platform env vars are used.
 try {
   const envFile = path.join(root, ".env");
   if (fs.existsSync(envFile)) {
@@ -22,7 +23,7 @@ try {
       ) {
         val = val.slice(1, -1);
       }
-      process.env[key] = val;
+      if (process.env[key] === undefined) process.env[key] = val;
     }
   }
 } catch {
@@ -33,7 +34,16 @@ const databaseUrl =
   process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:5432/zior_db";
 
 // Heroku Postgres (and most managed providers) require SSL; local ones don't.
+// DATABASE_SSL overrides the heuristic — needed for the dockerized Postgres,
+// whose host ("db") isn't localhost but still speaks plain TCP.
 const isLocalDb = /@(localhost|127\.0\.0\.1)/.test(databaseUrl);
+const sslEnv = (process.env.DATABASE_SSL || "").toLowerCase();
+const useSsl =
+  sslEnv === "false" || sslEnv === "disable" || sslEnv === "0"
+    ? false
+    : sslEnv === "true" || sslEnv === "require" || sslEnv === "1"
+      ? true
+      : !isLocalDb;
 
 export const config = {
   root,
@@ -46,7 +56,7 @@ export const config = {
   fromEmail: process.env.FROM_EMAIL || "ZIOR <login@zoominonrecovery.org>",
 
   databaseUrl,
-  dbSsl: isLocalDb ? false : { rejectUnauthorized: false },
+  dbSsl: useSsl ? { rejectUnauthorized: false } : false,
 
   // Filesystem layout (assets bundled with the app; no runtime writes needed).
   seedAssetsDir: path.join(root, "seed-assets"),
