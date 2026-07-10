@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+  Brand palette derived from the original ZIOR site:
+  primary blue #336699, light blue #d9e6f2, teal highlight #00cccc.
+*/
+:root {
+  --radius: 0.5rem;
+
+  --background: hsl(210 40% 98%);
+  --foreground: hsl(210 30% 15%);
+
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(210 30% 15%);
+
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(210 30% 15%);
+
+  --primary: hsl(210 51% 40%);
+  --primary-foreground: hsl(210 40% 98%);
+
+  --secondary: hsl(210 40% 92%);
+  --secondary-foreground: hsl(210 45% 22%);
+
+  --muted: hsl(210 40% 94%);
+  --muted-foreground: hsl(210 16% 42%);
+
+  --accent: hsl(184 90% 38%);
+  --accent-foreground: hsl(0 0% 100%);
+
+  --destructive: hsl(0 72% 48%);
+  --destructive-foreground: hsl(0 0% 98%);
+
+  --border: hsl(210 28% 84%);
+  --input: hsl(210 28% 84%);
+  --ring: hsl(210 51% 40%);
+}
+
+.dark {
+  --background: hsl(210 30% 10%);
+  --foreground: hsl(210 30% 92%);
+
+  --card: hsl(210 28% 13%);
+  --card-foreground: hsl(210 30% 92%);
+
+  --popover: hsl(210 28% 13%);
+  --popover-foreground: hsl(210 30% 92%);
+
+  --primary: hsl(210 55% 58%);
+  --primary-foreground: hsl(210 40% 10%);
+
+  --secondary: hsl(210 25% 20%);
+  --secondary-foreground: hsl(210 30% 92%);
+
+  --muted: hsl(210 25% 18%);
+  --muted-foreground: hsl(210 16% 62%);
+
+  --accent: hsl(184 70% 42%);
+  --accent-foreground: hsl(210 40% 10%);
+
+  --destructive: hsl(0 62% 52%);
+  --destructive-foreground: hsl(0 0% 98%);
+
+  --border: hsl(210 22% 26%);
+  --input: hsl(210 22% 26%);
+  --ring: hsl(210 55% 58%);
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family:
+      ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial,
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/*
+  Shared typography for user-authored rich-text (Tiptap output) and the editor
+  surface, so published content and the edit view look identical.
+*/
+.prose-content {
+  line-height: 1.7;
+}
+.prose-content :where(h1) {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin: 0.5rem 0 1rem;
+}
+.prose-content :where(h2) {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 1.5rem 0 0.75rem;
+}
+.prose-content :where(h3) {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem;
+}
+.prose-content :where(p) {
+  margin: 0.75rem 0;
+}
+.prose-content :where(ul) {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin: 0.75rem 0;
+}
+.prose-content :where(ol) {
+  list-style: decimal;
+  padding-left: 1.5rem;
+  margin: 0.75rem 0;
+}
+.prose-content :where(a) {
+  color: var(--primary);
+  text-decoration: underline;
+  font-weight: 500;
+}
+.prose-content :where(blockquote) {
+  border-left: 3px solid var(--border);
+  padding-left: 1rem;
+  color: var(--muted-foreground);
+  margin: 1rem 0;
+}
+.prose-content :where(strong) {
+  font-weight: 700;
+}
+.tiptap:focus {
+  outline: none;
+}
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--muted-foreground);
+  pointer-events: none;
+  height: 0;
+}
