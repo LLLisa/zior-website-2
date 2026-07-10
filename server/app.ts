@@ -12,10 +12,32 @@ import { settingsRouter } from "./routes/settings";
 import { usersRouter } from "./routes/users";
 import { jftRouter } from "./routes/jft";
 
+// Canonical hostname derived from APP_URL (e.g. "zoominonrecovery.org").
+const canonicalHost = (() => {
+  try {
+    return new URL(config.appUrl).hostname;
+  } catch {
+    return "";
+  }
+})();
+
 export function createApp() {
   const app = express();
   app.disable("x-powered-by");
+  app.set("trust proxy", true); // behind Heroku's router
   app.use(express.json({ limit: "1mb" }));
+
+  // Redirect the www subdomain to the canonical (apex) host.
+  if (canonicalHost && !canonicalHost.startsWith("www.")) {
+    app.use((req, res, next) => {
+      if (req.hostname === `www.${canonicalHost}`) {
+        res.redirect(301, `${config.appUrl}${req.originalUrl}`);
+        return;
+      }
+      next();
+    });
+  }
+
   app.use(withUser);
 
   // Uploaded media (slide images, QR code) served from Postgres.
