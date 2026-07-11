@@ -162,6 +162,27 @@ export async function seed() {
     await seedDeck("anniversary", [...DAILY_SLIDES, ...ANNIVERSARY_EXTRA]);
   }
 
+  // Ensure each meeting deck has the live "Just for Today" slide, placed right
+  // after the intro. Idempotent, so it also lands in an already-seeded database.
+  for (const deckSlug of ["daily", "anniversary"]) {
+    const deck = await one(`SELECT slug FROM decks WHERE slug = $1`, [deckSlug]);
+    if (!deck) continue;
+    const hasJft = await one(
+      `SELECT id FROM slides WHERE deck_slug = $1 AND kind = 'jft'`,
+      [deckSlug],
+    );
+    if (hasJft) continue;
+    await run(
+      `UPDATE slides SET position = position + 1 WHERE deck_slug = $1 AND position >= 1`,
+      [deckSlug],
+    );
+    await run(
+      `INSERT INTO slides (deck_slug, file_id, alt, position, kind)
+       VALUES ($1, NULL, 'Just for Today', 1, 'jft')`,
+      [deckSlug],
+    );
+  }
+
   const scripts: Array<[string, string, string]> = [
     ["daily", "Daily Meeting Script", "currentDailyScript.pdf"],
     ["anniversary", "Anniversary Meeting Script", "currentAnniversaryScript.pdf"],

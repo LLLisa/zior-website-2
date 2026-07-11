@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { fetchJftHtml } from "../jft";
 
 export const jftRouter = Router();
 
@@ -6,13 +7,7 @@ export const jftRouter = Router();
 // blocked by CORS. Mounted at /jftText for backwards compatibility.
 jftRouter.get("/", async (_req, res) => {
   try {
-    const upstream = await fetch("https://www.jftna.org/jft/");
-    if (!upstream.ok) {
-      res.status(502).send("Could not load Just for Today.");
-      return;
-    }
-    const html = await upstream.text();
-    res.type("html").send(html);
+    res.type("html").send(await fetchJftHtml());
   } catch {
     res.status(502).send("Could not load Just for Today.");
   }

@@ -83,9 +83,10 @@ export async function initDb() {
     CREATE TABLE IF NOT EXISTS slides (
       id        SERIAL PRIMARY KEY,
       deck_slug TEXT NOT NULL REFERENCES decks(slug) ON DELETE CASCADE,
-      file_id   TEXT NOT NULL REFERENCES files(id),
+      file_id   TEXT REFERENCES files(id),
       alt       TEXT NOT NULL DEFAULT '',
-      position  INTEGER NOT NULL
+      position  INTEGER NOT NULL,
+      kind      TEXT NOT NULL DEFAULT 'image'
     );
 
     CREATE TABLE IF NOT EXISTS scripts (
@@ -101,6 +102,13 @@ export async function initDb() {
       value TEXT NOT NULL
     );
   `);
+
+  // Migrations for databases created before these columns existed. A "jft" slide
+  // shows the live Just for Today reading and has no uploaded file.
+  await pool.query(
+    `ALTER TABLE slides ADD COLUMN IF NOT EXISTS kind TEXT NOT NULL DEFAULT 'image'`,
+  );
+  await pool.query(`ALTER TABLE slides ALTER COLUMN file_id DROP NOT NULL`);
 
   // Keep the table count low (Heroku essential-0 caps rows): drop expired auth rows.
   await pool.query(`DELETE FROM sessions WHERE expires_at < $1`, [Date.now()]);
@@ -127,9 +135,10 @@ export type DeckRow = { slug: string; title: string };
 export type SlideRow = {
   id: number;
   deck_slug: string;
-  file_id: string;
+  file_id: string | null;
   alt: string;
   position: number;
+  kind: "image" | "jft";
 };
 
 export type ScriptRow = {

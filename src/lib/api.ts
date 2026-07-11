@@ -13,7 +13,13 @@ export type Page = {
   updatedBy: string | null;
 };
 
-export type Slide = { id: number; alt: string; position: number; src: string };
+export type Slide = {
+  id: number;
+  kind: "image" | "jft";
+  alt: string;
+  position: number;
+  src: string | null;
+};
 
 export type Deck = { slug: string; title: string; slides: Slide[] };
 
@@ -89,6 +95,8 @@ export const api = {
     fd.append("alt", alt);
     return request<Slide>(`/api/decks/${slug}/slides`, { method: "POST", body: fd });
   },
+  addJftSlide: (slug: string) =>
+    request<Slide>(`/api/decks/${slug}/jft-slide`, { method: "POST" }),
   reorderSlides: (slug: string, order: number[]) =>
     request<{ slides: Slide[] }>(
       `/api/decks/${slug}/order`,

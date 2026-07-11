@@ -1,9 +1,13 @@
+import fs from "node:fs";
+import path from "node:path";
 import { Router } from "express";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { all, one, run, type DeckRow, type SlideRow } from "../db";
 import { getFile, storeFile, deleteFile } from "../files";
 import { requireAuth, type AuthRequest } from "../auth";
 import { imageUpload } from "../uploads";
+import { config } from "../config";
+import { fetchJftHtml, parseJftParts, wrapJftLines } from "../jft";
 
 export const decksRouter = Router();
 export const slidesRouter = Router();
@@ -11,14 +15,81 @@ export const slidesRouter = Router();
 function slideDto(s: SlideRow) {
   return {
     id: s.id,
+    kind: s.kind,
     alt: s.alt,
     position: s.position,
-    src: `/uploads/${s.file_id}`,
+    src: s.file_id ? `/uploads/${s.file_id}` : null,
   };
 }
 
 function getDeck(slug: string) {
   return one<DeckRow>(`SELECT * FROM decks WHERE slug = $1`, [slug]);
+}
+
+// Render the live Just for Today reading as one or more slides matching the
+// deck: the navy background image, a yellow header, and white body text.
+async function drawJftPages(pdf: PDFDocument) {
+  let parts;
+  try {
+    parts = parseJftParts(await fetchJftHtml());
+  } catch {
+    parts = {
+      heading: "JUST FOR TODAY",
+      title: "",
+      bodyText: "The daily meditation is unavailable right now.",
+    };
+  }
+  const W = 1280;
+  const H = 720;
+  const margin = 90;
+  const body = await pdf.embedFont(StandardFonts.TimesRoman);
+  const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+  const yellow = rgb(1, 1, 0);
+  const white = rgb(1, 1, 1);
+
+  let bg: Awaited<ReturnType<typeof pdf.embedJpg>> | null = null;
+  try {
+    bg = await pdf.embedJpg(
+      fs.readFileSync(path.join(config.root, "public", "jft-bg.jpg")),
+    );
+  } catch {
+    // fall back to a flat navy fill below
+  }
+  const newPage = () => {
+    const page = pdf.addPage([W, H]);
+    if (bg) page.drawImage(bg, { x: 0, y: 0, width: W, height: H });
+    else page.drawRectangle({ x: 0, y: 0, width: W, height: H, color: rgb(0.04, 0.1, 0.17) });
+    return page;
+  };
+
+  let page = newPage();
+  let y = H - margin;
+  const centered = (text: string, size: number, color: typeof white) => {
+    const w = bold.widthOfTextAtSize(text, size);
+    page.drawText(text, { x: (W - w) / 2, y, size, font: bold, color });
+    y -= size * 1.4;
+  };
+  centered(parts.heading, 34, yellow);
+  if (parts.title) centered(parts.title, 26, white);
+  y -= 12;
+
+  // Fit the whole reading below the headers on this single page.
+  const availableH = y - margin;
+  let size = 20;
+  let lines: string[] = [];
+  for (; size > 8; size--) {
+    lines = wrapJftLines(
+      parts.bodyText,
+      (s) => body.widthOfTextAtSize(s, size),
+      W - margin * 2,
+    );
+    if (lines.length * size * 1.35 <= availableH) break;
+  }
+  const lineH = size * 1.35;
+  for (const line of lines) {
+    if (line) page.drawText(line, { x: margin, y, size, font: body, color: white });
+    y -= lineH;
+  }
 }
 
 function getSlides(slug: string) {
@@ -64,6 +135,11 @@ decksRouter.get("/:slug/download", async (req, res) => {
   const slides = await getSlides(deck.slug);
   const pdf = await PDFDocument.create();
   for (const slide of slides) {
+    if (slide.kind === "jft") {
+      await drawJftPages(pdf);
+      continue;
+    }
+    if (!slide.file_id) continue;
     const file = await getFile(slide.file_id);
     if (!file) continue;
     let img;
@@ -116,6 +192,33 @@ decksRouter.post(
   },
 );
 
+// Add the special "Just for Today" text slide (only one allowed per deck).
+decksRouter.post("/:slug/jft-slide", requireAuth, async (req, res) => {
+  const deck = await getDeck(req.params.slug);
+  if (!deck) {
+    res.status(404).json({ error: "Deck not found." });
+    return;
+  }
+  const existing = await one<SlideRow>(
+    `SELECT * FROM slides WHERE deck_slug = $1 AND kind = 'jft'`,
+    [deck.slug],
+  );
+  if (existing) {
+    res.status(409).json({ error: "This deck already has a Just for Today slide." });
+    return;
+  }
+  const next = await one<{ p: number }>(
+    `SELECT COALESCE(MAX(position) + 1, 0) AS p FROM slides WHERE deck_slug = $1`,
+    [deck.slug],
+  );
+  const slide = await one<SlideRow>(
+    `INSERT INTO slides (deck_slug, file_id, alt, position, kind)
+     VALUES ($1, NULL, 'Just for Today', $2, 'jft') RETURNING *`,
+    [deck.slug, next!.p],
+  );
+  res.status(201).json(slideDto(slide!));
+});
+
 // Reorder a deck's slides given an array of slide ids in the new order.
 decksRouter.put("/:slug/order", requireAuth, async (req: AuthRequest, res) => {
   const deck = await getDeck(req.params.slug);
@@ -160,6 +263,6 @@ slidesRouter.delete("/:id", requireAuth, async (req: AuthRequest, res) => {
     return;
   }
   await run(`DELETE FROM slides WHERE id = $1`, [slide.id]);
-  await deleteFile(slide.file_id);
+  if (slide.file_id) await deleteFile(slide.file_id);
   res.json({ ok: true });
 });

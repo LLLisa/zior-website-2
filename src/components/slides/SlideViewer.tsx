@@ -8,6 +8,7 @@ import {
 import type { Slide } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { JftSlide } from "./JftSlide";
 
 type FsDocument = Document & {
   webkitFullscreenElement?: Element | null;
@@ -85,16 +86,20 @@ export function SlideViewer({ slides }: { slides: Slide[] }) {
           isFullscreen ? "flex-1 p-0" : "rounded-lg border p-2",
         )}
       >
-        <img
-          src={slide.src}
-          alt={slide.alt}
-          className={cn(
-            "object-contain",
-            // Fullscreen: fill the container (object-contain keeps the aspect
-            // ratio) so even small slides scale up to nearly the whole screen.
-            isFullscreen ? "h-full w-full" : "max-h-[70vh] w-auto max-w-full",
-          )}
-        />
+        {slide.kind === "jft" ? (
+          <JftSlide isFullscreen={isFullscreen} />
+        ) : (
+          <img
+            src={slide.src ?? undefined}
+            alt={slide.alt}
+            className={cn(
+              "object-contain",
+              // Fullscreen: fill the container (object-contain keeps the aspect
+              // ratio) so even small slides scale up to nearly the whole screen.
+              isFullscreen ? "h-full w-full" : "max-h-[70vh] w-auto max-w-full",
+            )}
+          />
+        )}
         {count > 1 && (
           <>
             <Button

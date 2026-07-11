@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, FileText, Plus, Trash2 } from "lucide-react";
 import { api, ApiError, type Deck, type Slide } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ export function SlideManager({
   const fileRef = useRef<HTMLInputElement>(null);
 
   const slides = deck.slides;
+  const hasJft = slides.some((s) => s.kind === "jft");
 
   const run = async (fn: () => Promise<void>) => {
     setBusy(true);
@@ -67,6 +68,12 @@ export function SlideManager({
       if (fileRef.current) fileRef.current.value = "";
     });
 
+  const addJft = () =>
+    run(async () => {
+      const slide = await api.addJftSlide(deck.slug);
+      onChange([...slides, slide]);
+    });
+
   const saveAlt = (slide: Slide, alt: string) =>
     run(async () => {
       const updated = await api.updateSlide(slide.id, alt);
@@ -93,11 +100,17 @@ export function SlideManager({
             key={slide.id}
             className="flex items-center gap-3 rounded-md border border-border p-2"
           >
-            <img
-              src={slide.src}
-              alt=""
-              className="h-14 w-20 shrink-0 rounded object-cover"
-            />
+            {slide.kind === "jft" ? (
+              <div className="jft-thumb flex h-14 w-20 shrink-0 items-center justify-center rounded p-1 text-center text-[0.6rem] font-semibold uppercase leading-tight tracking-wide text-white">
+                <span>Just for Today</span>
+              </div>
+            ) : (
+              <img
+                src={slide.src ?? undefined}
+                alt=""
+                className="h-14 w-20 shrink-0 rounded object-cover"
+              />
+            )}
             <Input
               defaultValue={slide.alt}
               placeholder="Describe this slide"
@@ -178,6 +191,22 @@ export function SlideManager({
         />
         <Button onClick={add} disabled={busy}>
           <Plus /> Add slide
+        </Button>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-dashed border-border p-3">
+        <div>
+          <p className="text-sm font-medium">Just for Today slide</p>
+          <p className="text-xs text-muted-foreground">
+            Shows the live daily meditation; always up to date. One per deck.
+          </p>
+        </div>
+        <Button
+          variant="secondary"
+          onClick={addJft}
+          disabled={busy || hasJft}
+        >
+          <FileText /> {hasJft ? "Already added" : "Add Just for Today"}
         </Button>
       </div>
     </section>
