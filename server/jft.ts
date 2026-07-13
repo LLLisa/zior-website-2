@@ -2,10 +2,42 @@
 // the /jftText proxy (for the page and the on-screen slide) and by the deck PDF
 // export (which needs plain text to typeset).
 
+// The reading only changes once a day, so cache it for the calendar day and
+// reuse it until the date rolls over. Keyed on the US/Eastern date to match the
+// meeting's timezone (and roughly when jftna.org publishes the new reading), so
+// the cache invalidates in step with the content rather than at UTC midnight.
+let cache: { day: string; html: string } | null = null;
+let inflight: Promise<string> | null = null;
+
+function easternDay(): string {
+  // "en-CA" yields an ISO-ish YYYY-MM-DD, which is a stable cache key.
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
 export async function fetchJftHtml(): Promise<string> {
-  const upstream = await fetch("https://www.jftna.org/jft/");
-  if (!upstream.ok) throw new Error(`JFT upstream returned ${upstream.status}`);
-  return upstream.text();
+  const day = easternDay();
+  if (cache && cache.day === day) return cache.html;
+
+  // Coalesce concurrent misses so a burst only triggers one upstream fetch.
+  if (!inflight) {
+    inflight = (async () => {
+      const upstream = await fetch("https://www.jftna.org/jft/");
+      if (!upstream.ok) {
+        throw new Error(`JFT upstream returned ${upstream.status}`);
+      }
+      const html = await upstream.text();
+      cache = { day, html }; // only cache on success, so errors aren't sticky
+      return html;
+    })().finally(() => {
+      inflight = null;
+    });
+  }
+  return inflight;
 }
 
 /** Strip the JFT HTML down to newline-separated, PDF-safe (ASCII) paragraphs. */
