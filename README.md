@@ -17,21 +17,41 @@ and the scripts.
 
 ## Getting started
 
-Requires a Postgres database. Point `DATABASE_URL` at it (see `.env`).
+**Prerequisites:** Node 22.x. The Docker workflow additionally needs Docker; the
+host workflow needs a Postgres you provide. Either way, the schema is created and
+seeded automatically on first start.
+
+### Docker (recommended)
+
+Runs the whole stack — Postgres, API, and client — in containers.
+
+```bash
+cp .env.example .env      # compose defaults work; set ADMIN_EMAIL for your login
+npm run dev               # docker compose up --build
+```
+
+Open http://localhost:1953. Postgres runs in a container and is also published on
+host port 5433 (for `psql`/GUI access). Helpers:
+
+- `npm run dev:down` — stop the stack.
+- `npm run dev:reset` — stop and wipe the database volume (re-seeds next start).
+
+### Host (no Docker)
+
+Runs the client and API directly on your machine against your own Postgres.
 
 ```bash
 npm install
-cp .env.example .env      # then edit values, incl. DATABASE_URL
-npm run dev               # client on :5173, API on :1953 (client proxies to it)
+cp .env.example .env      # point DATABASE_URL at your Postgres
+npm run dev:host          # client on :5173, API on :1953 (client proxies to it)
 ```
 
-Open http://localhost:5173. The schema is created and seeded automatically on
-first start.
+Open http://localhost:5173.
 
 ### First sign-in
 
 1. Set `ADMIN_EMAIL` in `.env`. On first run that address is seeded as an admin.
-2. Go to **Sign in**, enter that email.
+2. Open the **Sign in** button (on the _Service at ZIOR_ page) and enter that email.
 3. With no `RESEND_API_KEY` set, the magic link is **printed to the server
    console** — open it to sign in. (Set `RESEND_API_KEY` to send real emails.)
 
@@ -70,10 +90,13 @@ so no writable filesystem is required at runtime.
 
 - **Everyone (public):** read all pages; download deck PDFs and script PDFs.
 - **Any verified user:** edit page text, add/reorder/delete slides, replace
-  script PDFs, edit site settings.
-- **User management** (`/admin/users`, the only non-public page):
+  script PDFs, and edit site settings (`/admin/settings`).
+- **User management** (`/admin/users`):
   - Admins manage all users (including other admins).
   - Non-admins manage only non-admin users and cannot grant admin.
+
+`/admin/users` and `/admin/settings` are the only signed-in-only pages;
+everything else is public.
 
 To promote someone from the command line:
 
@@ -109,15 +132,18 @@ heroku config:set \
   ADMIN_EMAIL=you@example.com \
   RESEND_API_KEY=... "FROM_EMAIL=ZIOR <login@zoominonrecovery.org>" \
   -a zoominonrecovery
-git push heroku rework-modern-stack:main
+git push heroku main
 ```
 
 ## Scripts
 
-| Command             | Description                                    |
-| ------------------- | ---------------------------------------------- |
-| `npm run dev`       | Run client + API with hot reload.              |
-| `npm run build`     | Type-check and build the SPA.                  |
-| `npm start`         | Run the production server.                     |
-| `npm run typecheck` | Type-check client and server.                  |
-| `npm run seed:admin`| Promote a user to admin.                       |
+| Command              | Description                                              |
+| -------------------- | ------------------------------------------------------- |
+| `npm run dev`        | Run the full stack (Postgres + API + client) in Docker. |
+| `npm run dev:down`   | Stop the Docker stack.                                   |
+| `npm run dev:reset`  | Stop the Docker stack and wipe the database volume.      |
+| `npm run dev:host`   | Run client + API on the host (bring your own Postgres).  |
+| `npm run build`      | Type-check and build the SPA.                            |
+| `npm start`          | Run the production server.                               |
+| `npm run typecheck`  | Type-check client and server.                            |
+| `npm run seed:admin` | Promote a user to admin.                                 |
