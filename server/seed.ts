@@ -27,8 +27,7 @@ const PAGES: Array<{ slug: string; title: string; body: string }> = [
 <p>We are an LGBTQIA+ meeting of Narcotics Anonymous, but as the Third Tradition states, the only requirement for membership is a desire to stop using — so <strong>all are welcome here</strong>. We meet every day from 7:00 PM to 8:00 PM Eastern Time. You may join our meeting by clicking the button above or scanning the QR code on your phone.</p>
 <p>Also, please join us 15 minutes before the meeting for fellowship (we call it the "parking lot") and to make sure you can get in. You can stay after the meeting to let us get to know you as well. We look forward to seeing you there!</p>
 <p>The format of the meeting is a book study. We read the Just for Today daily meditation and then our speaker shares for 10–15 minutes on the reading. After that we have open shares until 10 minutes before the end of the meeting, at which time we call for a burning desire. We celebrate anniversaries on the last day of the month, and our business meetings are held every 1st and 3rd Monday an hour before the meeting. Check out <a href="/calendar">our calendar</a> for more information.</p>
-<p>We hope you will join us and find the love and support that we have found in this fellowship. And above all,</p>
-<p><strong>KEEP COMING BACK!</strong></p>`.trim(),
+<p>We hope you will join us and find the love and support that we have found in this fellowship. And above all,</p>`.trim(),
   },
   {
     slug: "about",
