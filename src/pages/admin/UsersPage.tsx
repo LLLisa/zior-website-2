@@ -112,37 +112,39 @@ export function UsersPage() {
 
       <form
         onSubmit={create}
-        className="flex flex-wrap items-end gap-3 rounded-lg border border-border bg-card p-4"
+        className="space-y-3 rounded-lg border border-border bg-card p-4"
       >
-        <div className="flex-1 space-y-2 min-w-[16rem]">
-          <Label htmlFor="new-email">Add a user</Label>
-          <Input
-            id="new-email"
-            type="email"
-            required
-            value={newEmail}
-            onChange={(e) => setNewEmail(e.target.value)}
-            placeholder="person@example.com"
-          />
+        <p className="text-sm font-medium">Add a user</p>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex-1 space-y-2 min-w-[12rem]">
+            <Label htmlFor="new-name">Name (optional)</Label>
+            <Input
+              id="new-name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+            />
+          </div>
+          <div className="flex-1 space-y-2 min-w-[16rem]">
+            <Label htmlFor="new-email">Email</Label>
+            <Input
+              id="new-email"
+              type="email"
+              required
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder="person@example.com"
+            />
+          </div>
+          {iAmAdmin && (
+            <label className="flex items-center gap-2 pb-2 text-sm">
+              <Switch checked={newAdmin} onCheckedChange={setNewAdmin} />
+              Admin
+            </label>
+          )}
+          <Button type="submit" disabled={creating} className="mb-0.5">
+            <UserPlus /> {creating ? "Adding…" : "Add user"}
+          </Button>
         </div>
-        <div className="flex-1 space-y-2 min-w-[12rem]">
-          <Label htmlFor="new-name">Name</Label>
-          <Input
-            id="new-name"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder="Optional"
-          />
-        </div>
-        {iAmAdmin && (
-          <label className="flex items-center gap-2 pb-2 text-sm">
-            <Switch checked={newAdmin} onCheckedChange={setNewAdmin} />
-            Admin
-          </label>
-        )}
-        <Button type="submit" disabled={creating} className="mb-0.5">
-          <UserPlus /> {creating ? "Adding…" : "Add user"}
-        </Button>
       </form>
 
       {loading ? (
