@@ -1,9 +1,8 @@
 import { Link } from "react-router-dom";
-import { FileText, Presentation, LogIn } from "lucide-react";
+import { FileText, Presentation } from "lucide-react";
 import { EditableArticle } from "@/components/EditableArticle";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/lib/auth";
+import { UserMenu } from "@/components/layout/UserMenu";
 
 const materials = [
   { path: "/daily-script", label: "Daily Script", icon: FileText },
@@ -36,26 +35,14 @@ function ServiceMaterials() {
   );
 }
 
-function LoginCta() {
-  const { user } = useAuth();
-  if (user) return null;
-  return (
-    <div className="flex justify-center pt-2">
-      <Button asChild size="lg">
-        <Link to="/login">
-          <LogIn /> Sign in
-        </Link>
-      </Button>
-    </div>
-  );
-}
-
 export function ServiceAtZior() {
   return (
     <div className="space-y-6">
       <EditableArticle slug="service-at-zior" afterBody={<ServiceMaterials />} />
       <EditableArticle slug="service-at-zior-more" hideTitle />
-      <LoginCta />
+      <div className="flex justify-center pt-2">
+        <UserMenu />
+      </div>
     </div>
   );
 }

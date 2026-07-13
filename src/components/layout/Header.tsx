@@ -1,12 +1,9 @@
 import { Link } from "react-router-dom";
 import { useSettings } from "@/lib/settings";
-import { useAuth } from "@/lib/auth";
 import { NavBar } from "./NavBar";
-import { UserMenu } from "./UserMenu";
 
 export function Header() {
   const { settings } = useSettings();
-  const { user } = useAuth();
   const title = settings?.site_title || "Zoom In On Recovery";
 
   return (
@@ -15,13 +12,7 @@ export function Header() {
         <Link to="/" className="text-xl font-bold tracking-tight sm:text-2xl">
           {title}
         </Link>
-        <UserMenu />
       </div>
-      {user && (
-        <p className="px-4 pb-1 text-center text-xs text-primary-foreground/70">
-          You're signed in — hover any page to edit its content.
-        </p>
-      )}
       <NavBar />
     </header>
   );
