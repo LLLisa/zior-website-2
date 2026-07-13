@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Trash2, UserPlus } from "lucide-react";
 import { api, ApiError, type User } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -20,7 +21,8 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export function UsersPage() {
-  const { user: me } = useAuth();
+  const { user: me, logout } = useAuth();
+  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -91,6 +93,13 @@ export function UsersPage() {
     setError("");
     try {
       await api.deleteUser(u.id);
+      // Deleting your own account cascades to your session server-side; clear
+      // the client's auth state too and send them back to the public site.
+      if (me?.id === u.id) {
+        await logout();
+        navigate("/");
+        return;
+      }
       setUsers((list) => list.filter((x) => x.id !== u.id));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not delete user.");
@@ -215,10 +224,15 @@ export function UsersPage() {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Remove {u.email}?</AlertDialogTitle>
+                            <AlertDialogTitle>
+                              {me?.id === u.id
+                                ? "Delete your account?"
+                                : `Remove ${u.email}?`}
+                            </AlertDialogTitle>
                             <AlertDialogDescription>
-                              They will lose access immediately. This can't be
-                              undone.
+                              {me?.id === u.id
+                                ? "You'll be signed out immediately. This can't be undone."
+                                : "They will lose access immediately. This can't be undone."}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -227,7 +241,7 @@ export function UsersPage() {
                               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                               onClick={() => remove(u)}
                             >
-                              Remove
+                              {me?.id === u.id ? "Delete account" : "Remove"}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
