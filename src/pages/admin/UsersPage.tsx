@@ -152,8 +152,8 @@ export function UsersPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-secondary/60 text-muted-foreground">
               <tr>
-                <th className="px-4 py-2 font-medium">Email</th>
                 <th className="px-4 py-2 font-medium">Name</th>
+                <th className="px-4 py-2 font-medium">Email</th>
                 <th className="px-4 py-2 font-medium">Role</th>
                 <th className="px-4 py-2 text-right font-medium">Actions</th>
               </tr>
@@ -161,12 +161,6 @@ export function UsersPage() {
             <tbody>
               {users.map((u) => (
                 <tr key={u.id} className="border-t border-border">
-                  <td className="px-4 py-3">
-                    {u.email}
-                    {me?.id === u.id && (
-                      <span className="ml-2 text-xs text-muted-foreground">(you)</span>
-                    )}
-                  </td>
                   <td className="px-4 py-3">
                     <Input
                       key={`name-${u.id}-${u.name}`}
@@ -180,6 +174,12 @@ export function UsersPage() {
                         if (e.key === "Enter") e.currentTarget.blur();
                       }}
                     />
+                  </td>
+                  <td className="px-4 py-3">
+                    {u.email}
+                    {me?.id === u.id && (
+                      <span className="ml-2 text-xs text-muted-foreground">(you)</span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     {u.isAdmin ? (
