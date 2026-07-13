@@ -1,30 +1,21 @@
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { navRoutes } from "./navRoutes";
 
-const routes = [
-  { path: "/", label: "Home" },
-  { path: "/about", label: "About Us" },
-  { path: "/for-the-newcomer", label: "For the Newcomer" },
-  { path: "/calendar", label: "Calendar" },
-  { path: "/jft", label: "Just For Today" },
-  { path: "/service-at-zior", label: "Service at ZIOR" },
-  { path: "/helpful-links", label: "Helpful Links" },
-  { path: "/seventh-tradition", label: "7th Tradition" },
-];
-
+/** Desktop navigation. Hidden on small screens, where MobileNav takes over. */
 export function NavBar() {
   return (
-    <nav className="w-full">
-      <ul className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-1 px-2 pb-2">
-        {routes.map((route) => (
+    <nav className="hidden border-t border-white/10 md:block">
+      <ul className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-1 px-4 py-2">
+        {navRoutes.map((route) => (
           <li key={route.path}>
             <NavLink
               to={route.path}
               end
               className={({ isActive }) =>
                 cn(
-                  "rounded-md px-3 py-1.5 text-sm font-medium text-primary-foreground/80 transition-colors hover:bg-white/10 hover:text-primary-foreground",
-                  isActive && "bg-white/15 text-primary-foreground",
+                  "block rounded-full px-3.5 py-1.5 text-sm font-medium text-primary-foreground/75 transition-colors hover:bg-white/10 hover:text-primary-foreground",
+                  isActive && "bg-white/20 text-primary-foreground shadow-sm",
                 )
               }
             >
