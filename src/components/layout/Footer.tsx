@@ -13,7 +13,7 @@ export function Footer() {
     <footer className="sticky bottom-0 z-30 w-full border-t border-white/10 bg-primary text-primary-foreground shadow-[0_-2px_10px_rgba(0,0,0,0.12)]">
       <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-2 px-4 py-2.5 text-sm sm:flex-row">
         <p className="text-center text-primary-foreground/85 sm:text-left">
-          Meeting time (your local zone):{" "}
+          Meeting time (local):{" "}
           <strong className="text-primary-foreground">{start}</strong> to{" "}
           <strong className="text-primary-foreground">{end}</strong>
         </p>
