@@ -26,6 +26,7 @@ export function UsersPage() {
   const [error, setError] = useState("");
 
   const [newEmail, setNewEmail] = useState("");
+  const [newName, setNewName] = useState("");
   const [newAdmin, setNewAdmin] = useState(false);
   const [creating, setCreating] = useState(false);
 
@@ -52,14 +53,27 @@ export function UsersPage() {
     setCreating(true);
     setError("");
     try {
-      const created = await api.createUser(newEmail.trim(), newAdmin);
+      const created = await api.createUser(newEmail.trim(), newName.trim(), newAdmin);
       setUsers((list) => [...list, created].sort((a, b) => a.email.localeCompare(b.email)));
       setNewEmail("");
+      setNewName("");
       setNewAdmin(false);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not create user.");
     } finally {
       setCreating(false);
+    }
+  };
+
+  const saveName = async (u: User, name: string) => {
+    if (name === u.name) return;
+    setError("");
+    try {
+      const updated = await api.setUserName(u.id, name);
+      setUsers((list) => list.map((x) => (x.id === u.id ? updated : x)));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not update name.");
+      load(); // revert the field to the server's value
     }
   };
 
@@ -111,6 +125,15 @@ export function UsersPage() {
             placeholder="person@example.com"
           />
         </div>
+        <div className="flex-1 space-y-2 min-w-[12rem]">
+          <Label htmlFor="new-name">Name</Label>
+          <Input
+            id="new-name"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="Optional"
+          />
+        </div>
         {iAmAdmin && (
           <label className="flex items-center gap-2 pb-2 text-sm">
             <Switch checked={newAdmin} onCheckedChange={setNewAdmin} />
@@ -130,6 +153,7 @@ export function UsersPage() {
             <thead className="bg-secondary/60 text-muted-foreground">
               <tr>
                 <th className="px-4 py-2 font-medium">Email</th>
+                <th className="px-4 py-2 font-medium">Name</th>
                 <th className="px-4 py-2 font-medium">Role</th>
                 <th className="px-4 py-2 text-right font-medium">Actions</th>
               </tr>
@@ -142,6 +166,20 @@ export function UsersPage() {
                     {me?.id === u.id && (
                       <span className="ml-2 text-xs text-muted-foreground">(you)</span>
                     )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Input
+                      key={`name-${u.id}-${u.name}`}
+                      defaultValue={u.name}
+                      disabled={!canManage(u)}
+                      placeholder="—"
+                      aria-label={`Name for ${u.email}`}
+                      className="h-8 max-w-[12rem]"
+                      onBlur={(e) => saveName(u, e.target.value.trim())}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") e.currentTarget.blur();
+                      }}
+                    />
                   </td>
                   <td className="px-4 py-3">
                     {u.isAdmin ? (

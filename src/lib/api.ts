@@ -1,6 +1,7 @@
 export type User = {
   id: number;
   email: string;
+  name: string;
   isAdmin: boolean;
   createdAt?: string;
 };
@@ -127,10 +128,12 @@ export const api = {
 
   // Users
   listUsers: () => request<User[]>("/api/users"),
-  createUser: (email: string, isAdmin: boolean) =>
-    request<User>("/api/users", jsonBody("POST", { email, isAdmin })),
+  createUser: (email: string, name: string, isAdmin: boolean) =>
+    request<User>("/api/users", jsonBody("POST", { email, name, isAdmin })),
   setUserAdmin: (id: number, isAdmin: boolean) =>
     request<User>(`/api/users/${id}`, jsonBody("PATCH", { isAdmin })),
+  setUserName: (id: number, name: string) =>
+    request<User>(`/api/users/${id}`, jsonBody("PATCH", { name })),
   deleteUser: (id: number) =>
     request<{ ok: true }>(`/api/users/${id}`, { method: "DELETE" }),
 };

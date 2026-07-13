@@ -8,6 +8,7 @@ function dto(u: UserRow) {
   return {
     id: u.id,
     email: u.email,
+    name: u.name,
     isAdmin: !!u.is_admin,
     createdAt: u.created_at,
   };
@@ -39,6 +40,7 @@ usersRouter.get("/", async (_req, res) => {
 usersRouter.post("/", async (req: AuthRequest, res) => {
   const actor = req.user!;
   const email = String(req.body?.email || "").trim().toLowerCase();
+  const name = String(req.body?.name ?? "").trim();
   const isAdmin = !!req.body?.isAdmin;
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     res.status(400).json({ error: "A valid email is required." });
@@ -54,8 +56,8 @@ usersRouter.post("/", async (req: AuthRequest, res) => {
     return;
   }
   const user = await one<UserRow>(
-    `INSERT INTO users (email, is_admin) VALUES ($1, $2) RETURNING *`,
-    [email, isAdmin],
+    `INSERT INTO users (email, name, is_admin) VALUES ($1, $2, $3) RETURNING *`,
+    [email, name, isAdmin],
   );
   res.status(201).json(dto(user!));
 });
@@ -70,6 +72,10 @@ usersRouter.patch("/:id", async (req: AuthRequest, res) => {
   if (!canManage(actor, target)) {
     res.status(403).json({ error: "You can only manage non-admin users." });
     return;
+  }
+  if ("name" in (req.body ?? {})) {
+    const name = String(req.body.name ?? "").trim();
+    await run(`UPDATE users SET name = $1 WHERE id = $2`, [name, target.id]);
   }
   if ("isAdmin" in (req.body ?? {})) {
     const isAdmin = !!req.body.isAdmin;

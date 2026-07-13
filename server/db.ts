@@ -39,6 +39,7 @@ export async function initDb() {
     CREATE TABLE IF NOT EXISTS users (
       id         SERIAL PRIMARY KEY,
       email      TEXT NOT NULL UNIQUE,
+      name       TEXT NOT NULL DEFAULT '',
       is_admin   BOOLEAN NOT NULL DEFAULT FALSE,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
@@ -109,6 +110,10 @@ export async function initDb() {
     `ALTER TABLE slides ADD COLUMN IF NOT EXISTS kind TEXT NOT NULL DEFAULT 'image'`,
   );
   await pool.query(`ALTER TABLE slides ALTER COLUMN file_id DROP NOT NULL`);
+  // A display name for each user; sign-in still only uses the email.
+  await pool.query(
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS name TEXT NOT NULL DEFAULT ''`,
+  );
 
   // Keep the table count low (Heroku essential-0 caps rows): drop expired auth rows.
   await pool.query(`DELETE FROM sessions WHERE expires_at < $1`, [Date.now()]);
@@ -118,6 +123,7 @@ export async function initDb() {
 export type UserRow = {
   id: number;
   email: string;
+  name: string;
   is_admin: boolean;
   created_at: string;
 };
