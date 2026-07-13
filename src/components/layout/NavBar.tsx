@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const routes = [
+  { path: "/", label: "Home" },
   { path: "/about", label: "About Us" },
   { path: "/for-the-newcomer", label: "For the Newcomer" },
   { path: "/calendar", label: "Calendar" },
@@ -19,6 +20,7 @@ export function NavBar() {
           <li key={route.path}>
             <NavLink
               to={route.path}
+              end
               className={({ isActive }) =>
                 cn(
                   "rounded-md px-3 py-1.5 text-sm font-medium text-primary-foreground/80 transition-colors hover:bg-white/10 hover:text-primary-foreground",
