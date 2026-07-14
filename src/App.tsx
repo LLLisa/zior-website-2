@@ -6,6 +6,7 @@ import { CmsPage } from "@/pages/CmsPage";
 import { Jft } from "@/pages/Jft";
 import { Calendar } from "@/pages/Calendar";
 import { ServiceAtZior } from "@/pages/ServiceAtZior";
+import { SeventhTradition } from "@/pages/SeventhTradition";
 import { SlideDeckPage } from "@/pages/SlideDeckPage";
 import { ScriptPage } from "@/pages/ScriptPage";
 import { Login } from "@/pages/Login";
@@ -40,10 +41,7 @@ export default function App() {
         />
         <Route path="/helpful-links" element={<CmsPage slug="helpful-links" />} />
         <Route path="/service-at-zior" element={<ServiceAtZior />} />
-        <Route
-          path="/seventh-tradition"
-          element={<CmsPage slug="seventh-tradition" />}
-        />
+        <Route path="/seventh-tradition" element={<SeventhTradition />} />
         <Route path="/scripts/:slug" element={<ScriptRoute />} />
         <Route path="/decks/:slug" element={<DeckRoute />} />
         <Route path="/slide-deck-daily" element={<SlideDeckPage slug="daily" />} />

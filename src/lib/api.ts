@@ -40,6 +40,7 @@ export type Settings = {
   meeting_tz: string;
   calendar_embed_src: string;
   qrUrl: string | null;
+  seventhTraditionUrl: string | null;
 };
 
 export class ApiError extends Error {
@@ -143,6 +144,16 @@ export const api = {
     fd.append("image", file);
     return request<Settings>("/api/settings/qr", { method: "PUT", body: fd });
   },
+  replaceSeventhTradition: (file: File) => {
+    const fd = new FormData();
+    fd.append("image", file);
+    return request<Settings>("/api/settings/seventh-tradition", {
+      method: "PUT",
+      body: fd,
+    });
+  },
+  removeSeventhTradition: () =>
+    request<Settings>("/api/settings/seventh-tradition", { method: "DELETE" }),
 
   // Users
   listUsers: () => request<User[]>("/api/users"),

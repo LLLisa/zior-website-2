@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Response } from "express";
 import { all, run } from "../db";
 import { storeFile, deleteFile } from "../files";
 import { requireAuth, type AuthRequest } from "../auth";
@@ -24,8 +24,14 @@ async function readSettings(): Promise<Record<string, string>> {
 }
 
 function toDto(s: Record<string, string>) {
-  const { qr_file_id, ...rest } = s;
-  return { ...rest, qrUrl: qr_file_id ? `/uploads/${qr_file_id}` : null };
+  const { qr_file_id, seventh_tradition_file_id, ...rest } = s;
+  return {
+    ...rest,
+    qrUrl: qr_file_id ? `/uploads/${qr_file_id}` : null,
+    seventhTraditionUrl: seventh_tradition_file_id
+      ? `/uploads/${seventh_tradition_file_id}`
+      : null,
+  };
 }
 
 settingsRouter.get("/", async (_req, res) => {
@@ -45,24 +51,47 @@ settingsRouter.put("/", requireAuth, async (req: AuthRequest, res) => {
   res.json(toDto(await readSettings()));
 });
 
-// Replace the QR code image.
-settingsRouter.put(
-  "/qr",
-  requireAuth,
-  imageUpload.single("image"),
-  async (req: AuthRequest, res) => {
+// Upload/replace a single named image stored in settings (key -> file id).
+function putImage(settingKey: string) {
+  return async (req: AuthRequest, res: Response) => {
     if (!req.file) {
       res.status(400).json({ error: "An image file is required." });
       return;
     }
-    const previous = (await readSettings()).qr_file_id;
+    const previous = (await readSettings())[settingKey];
     const fileId = await storeFile(req.file.mimetype, req.file.buffer);
     await run(
-      `INSERT INTO settings (key, value) VALUES ('qr_file_id', $1)
+      `INSERT INTO settings (key, value) VALUES ($1, $2)
        ON CONFLICT (key) DO UPDATE SET value = excluded.value`,
-      [fileId],
+      [settingKey, fileId],
     );
     if (previous && previous !== fileId) await deleteFile(previous);
     res.json(toDto(await readSettings()));
-  },
+  };
+}
+
+// Remove a single named image.
+function removeImage(settingKey: string) {
+  return async (_req: AuthRequest, res: Response) => {
+    const previous = (await readSettings())[settingKey];
+    await run(`DELETE FROM settings WHERE key = $1`, [settingKey]);
+    if (previous) await deleteFile(previous);
+    res.json(toDto(await readSettings()));
+  };
+}
+
+// Replace the QR code image.
+settingsRouter.put("/qr", requireAuth, imageUpload.single("image"), putImage("qr_file_id"));
+
+// The 7th Tradition slide shown below the text on that page.
+settingsRouter.put(
+  "/seventh-tradition",
+  requireAuth,
+  imageUpload.single("image"),
+  putImage("seventh_tradition_file_id"),
+);
+settingsRouter.delete(
+  "/seventh-tradition",
+  requireAuth,
+  removeImage("seventh_tradition_file_id"),
 );

@@ -168,6 +168,20 @@ export async function seed() {
     }
   }
 
+  // 7th Tradition slide shown on that page — default to the bundled slide image.
+  const st = await one(
+    `SELECT value FROM settings WHERE key = 'seventh_tradition_file_id'`,
+  );
+  if (!st) {
+    const stId = await seedFile("slides/7thTradition.png");
+    if (stId) {
+      await run(
+        `INSERT INTO settings (key, value) VALUES ('seventh_tradition_file_id', $1)`,
+        [stId],
+      );
+    }
+  }
+
   // A cms-sync manifest, when present, replaces the hardcoded defaults so a fresh
   // reseed carries the content last pulled from the deployed site.
   const manifest = loadManifest();
