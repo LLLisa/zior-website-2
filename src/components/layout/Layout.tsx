@@ -4,10 +4,14 @@ import { Footer } from "./Footer";
 
 export function Layout() {
   return (
-    <div className="flex min-h-screen flex-col">
+    // App shell: header and footer are static rows; only <main> scrolls, so the
+    // bars stay put instead of moving with the page scroll.
+    <div className="flex h-dvh flex-col">
       <Header />
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 sm:px-6">
-        <Outlet />
+      <main className="min-h-0 flex-1 overflow-y-auto">
+        <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6">
+          <Outlet />
+        </div>
       </main>
       <Footer />
     </div>
