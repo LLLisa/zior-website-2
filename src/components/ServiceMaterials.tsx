@@ -36,6 +36,7 @@ export function ServiceMaterials() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   const [adding, setAdding] = useState<null | "script" | "deck">(null);
   const [title, setTitle] = useState("");
@@ -151,7 +152,31 @@ export function ServiceMaterials() {
 
   return (
     <section className="pt-2">
-      <h2 className="mb-3 text-xl font-semibold text-primary">Service materials</h2>
+      <div className="mb-3 flex items-start justify-between gap-4">
+        <h2 className="text-xl font-semibold text-primary">Service materials</h2>
+        {user && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setEditMode((e) => !e);
+              setAdding(null);
+              setEditingKey(null);
+              setError("");
+            }}
+          >
+            {editMode ? (
+              <>
+                <Check /> Done
+              </>
+            ) : (
+              <>
+                <Pencil /> Edit
+              </>
+            )}
+          </Button>
+        )}
+      </div>
 
       {error && <p className="mb-3 text-sm text-destructive">{error}</p>}
 
@@ -204,7 +229,7 @@ export function ServiceMaterials() {
                       <Icon className="size-5 shrink-0 text-primary" />
                       {m.title}
                     </Link>
-                    {user && (
+                    {editMode && (
                       <>
                         <Button
                           size="icon"
@@ -255,7 +280,7 @@ export function ServiceMaterials() {
         </div>
       )}
 
-      {user && (
+      {user && editMode && (
         <div className="mt-4">
           {adding === null ? (
             <div className="flex flex-wrap gap-2">
