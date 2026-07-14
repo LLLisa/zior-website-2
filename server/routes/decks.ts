@@ -3,7 +3,7 @@ import path from "node:path";
 import { Router } from "express";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { all, one, run, type DeckRow, type SlideRow } from "../db";
-import { getFile, storeFile, deleteFile } from "../files";
+import { getFile, storeFile, deleteFile, contentHash } from "../files";
 import { requireAuth, type AuthRequest } from "../auth";
 import { imageUpload } from "../uploads";
 import { uniqueSlug } from "../slug";
@@ -20,6 +20,7 @@ function slideDto(s: SlideRow) {
     alt: s.alt,
     position: s.position,
     src: s.file_id ? `/uploads/${s.file_id}` : null,
+    hash: s.hash,
   };
 }
 
@@ -230,9 +231,15 @@ decksRouter.post(
       [deck.slug],
     );
     const slide = await one<SlideRow>(
-      `INSERT INTO slides (deck_slug, file_id, alt, position)
-       VALUES ($1, $2, $3, $4) RETURNING *`,
-      [deck.slug, fileId, String(req.body?.alt || ""), next!.p],
+      `INSERT INTO slides (deck_slug, file_id, alt, position, hash)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [
+        deck.slug,
+        fileId,
+        String(req.body?.alt || ""),
+        next!.p,
+        contentHash(req.file.buffer),
+      ],
     );
     res.status(201).json(slideDto(slide!));
   },

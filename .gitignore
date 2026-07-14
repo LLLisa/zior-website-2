@@ -9,3 +9,4 @@ data
 .DS_Store
 secrets
 todo.txt
+server/.cms-sync-cache.json

@@ -3,12 +3,13 @@ import path from "node:path";
 import http from "node:http";
 import https from "node:https";
 import { config } from "./config";
-import { initDb } from "./db";
+import { initDb, backfillSlideHashes } from "./db";
 import { seed } from "./seed";
 import { createApp } from "./app";
 
 await initDb();
 await seed();
+await backfillSlideHashes();
 const app = createApp();
 
 const keyPath = path.join(config.secretsDir, "www_zoominonrecovery_org.key");

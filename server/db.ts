@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import pg from "pg";
 import { config } from "./config";
 
@@ -87,7 +88,8 @@ export async function initDb() {
       file_id   TEXT REFERENCES files(id),
       alt       TEXT NOT NULL DEFAULT '',
       position  INTEGER NOT NULL,
-      kind      TEXT NOT NULL DEFAULT 'image'
+      kind      TEXT NOT NULL DEFAULT 'image',
+      hash      TEXT
     );
 
     CREATE TABLE IF NOT EXISTS scripts (
@@ -110,6 +112,9 @@ export async function initDb() {
     `ALTER TABLE slides ADD COLUMN IF NOT EXISTS kind TEXT NOT NULL DEFAULT 'image'`,
   );
   await pool.query(`ALTER TABLE slides ALTER COLUMN file_id DROP NOT NULL`);
+  // Content hash of each slide's image, so a remote sync can tell which slides
+  // changed without downloading them. Backfilled by backfillSlideHashes().
+  await pool.query(`ALTER TABLE slides ADD COLUMN IF NOT EXISTS hash TEXT`);
   // A display name for each user; sign-in still only uses the email.
   await pool.query(
     `ALTER TABLE users ADD COLUMN IF NOT EXISTS name TEXT NOT NULL DEFAULT ''`,
@@ -118,6 +123,23 @@ export async function initDb() {
   // Keep the table count low (Heroku essential-0 caps rows): drop expired auth rows.
   await pool.query(`DELETE FROM sessions WHERE expires_at < $1`, [Date.now()]);
   await pool.query(`DELETE FROM login_tokens WHERE expires_at < $1`, [Date.now()]);
+}
+
+/**
+ * Fill in slides.hash for image slides created before the column existed (or by
+ * the seed, which inserts without a hash). Runs once per boot; a no-op when all
+ * image slides already have a hash.
+ */
+export async function backfillSlideHashes(): Promise<void> {
+  const rows = await all<{ id: number; data: Buffer }>(
+    `SELECT s.id, f.data
+       FROM slides s JOIN files f ON f.id = s.file_id
+      WHERE s.file_id IS NOT NULL AND s.hash IS NULL`,
+  );
+  for (const r of rows) {
+    const hash = crypto.createHash("sha256").update(r.data).digest("hex");
+    await run(`UPDATE slides SET hash = $1 WHERE id = $2`, [hash, r.id]);
+  }
 }
 
 export type UserRow = {
@@ -145,6 +167,7 @@ export type SlideRow = {
   alt: string;
   position: number;
   kind: "image" | "jft";
+  hash: string | null;
 };
 
 export type ScriptRow = {

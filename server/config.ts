@@ -50,6 +50,11 @@ export const config = {
   isProd: process.env.NODE_ENV === "production",
   port: Number(process.env.PORT) || 1953,
   appUrl: (process.env.APP_URL || "http://localhost:5173").replace(/\/$/, ""),
+  // Deployed site the cms-sync tool pulls CMS content from (public GETs only).
+  remoteUrl: (process.env.REMOTE_URL || "https://zoominonrecovery.org").replace(
+    /\/$/,
+    "",
+  ),
   sessionSecret: process.env.SESSION_SECRET || "dev-insecure-change-me",
   adminEmail: (process.env.ADMIN_EMAIL || "").trim().toLowerCase(),
   resendApiKey: process.env.RESEND_API_KEY || "",

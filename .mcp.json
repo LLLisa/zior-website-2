@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "zior-cms-sync": {
+      "command": "npx",
+      "args": ["tsx", "server/mcp/cms-sync-server.ts"],
+      "env": {
+        "DATABASE_URL": "postgres://postgres:postgres@localhost:5433/zior_db",
+        "DATABASE_SSL": "false",
+        "REMOTE_URL": "https://zoominonrecovery.org"
+      }
+    }
+  }
+}
