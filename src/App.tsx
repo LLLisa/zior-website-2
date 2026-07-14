@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Home } from "@/pages/Home";
@@ -12,6 +12,18 @@ import { Login } from "@/pages/Login";
 import { NotFound } from "@/pages/NotFound";
 import { UsersPage } from "@/pages/admin/UsersPage";
 import { SettingsPage } from "@/pages/admin/SettingsPage";
+
+// Dynamic material routes read the slug from the URL; the fixed legacy routes
+// below still work for older bookmarks.
+function ScriptRoute() {
+  const { slug } = useParams();
+  return <ScriptPage slug={slug!} />;
+}
+
+function DeckRoute() {
+  const { slug } = useParams();
+  return <SlideDeckPage slug={slug!} />;
+}
 
 export default function App() {
   return (
@@ -32,6 +44,8 @@ export default function App() {
           path="/seventh-tradition"
           element={<CmsPage slug="seventh-tradition" />}
         />
+        <Route path="/scripts/:slug" element={<ScriptRoute />} />
+        <Route path="/decks/:slug" element={<DeckRoute />} />
         <Route path="/slide-deck-daily" element={<SlideDeckPage slug="daily" />} />
         <Route
           path="/slide-deck-anniversary"

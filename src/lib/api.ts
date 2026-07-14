@@ -89,7 +89,14 @@ export const api = {
     request<Page>(`/api/pages/${slug}`, jsonBody("PUT", { title, body })),
 
   // Decks + slides
+  listDecks: () => request<Deck[]>("/api/decks"),
   getDeck: (slug: string) => request<Deck>(`/api/decks/${slug}`),
+  createDeck: (title: string) =>
+    request<Deck>("/api/decks", jsonBody("POST", { title })),
+  renameDeck: (slug: string, title: string) =>
+    request<Deck>(`/api/decks/${slug}`, jsonBody("PATCH", { title })),
+  deleteDeck: (slug: string) =>
+    request<{ ok: true }>(`/api/decks/${slug}`, { method: "DELETE" }),
   addSlide: (slug: string, file: File, alt: string) => {
     const fd = new FormData();
     fd.append("image", file);
@@ -109,7 +116,18 @@ export const api = {
     request<{ ok: true }>(`/api/slides/${id}`, { method: "DELETE" }),
 
   // Scripts
+  listScripts: () => request<Script[]>("/api/scripts"),
   getScript: (slug: string) => request<Script>(`/api/scripts/${slug}`),
+  createScript: (title: string, file?: File | null) => {
+    const fd = new FormData();
+    fd.append("title", title);
+    if (file) fd.append("pdf", file);
+    return request<Script>("/api/scripts", { method: "POST", body: fd });
+  },
+  renameScript: (slug: string, title: string) =>
+    request<Script>(`/api/scripts/${slug}`, jsonBody("PATCH", { title })),
+  deleteScript: (slug: string) =>
+    request<{ ok: true }>(`/api/scripts/${slug}`, { method: "DELETE" }),
   replaceScript: (slug: string, file: File) => {
     const fd = new FormData();
     fd.append("pdf", file);

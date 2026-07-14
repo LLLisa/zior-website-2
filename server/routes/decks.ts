@@ -6,6 +6,7 @@ import { all, one, run, type DeckRow, type SlideRow } from "../db";
 import { getFile, storeFile, deleteFile } from "../files";
 import { requireAuth, type AuthRequest } from "../auth";
 import { imageUpload } from "../uploads";
+import { uniqueSlug } from "../slug";
 import { config } from "../config";
 import { fetchJftHtml, parseJftParts, wrapJftLines } from "../jft";
 
@@ -112,6 +113,18 @@ decksRouter.get("/", async (_req, res) => {
   res.json(out);
 });
 
+// Any verified user may create a new (empty) deck; slides are added afterward.
+decksRouter.post("/", requireAuth, async (req: AuthRequest, res) => {
+  const title = String(req.body?.title || "").trim();
+  if (!title) {
+    res.status(400).json({ error: "A title is required." });
+    return;
+  }
+  const slug = await uniqueSlug("decks", title);
+  await run(`INSERT INTO decks (slug, title) VALUES ($1, $2)`, [slug, title]);
+  res.status(201).json({ slug, title, slides: [] });
+});
+
 decksRouter.get("/:slug", async (req, res) => {
   const deck = await getDeck(req.params.slug);
   if (!deck) {
@@ -123,6 +136,39 @@ decksRouter.get("/:slug", async (req, res) => {
     title: deck.title,
     slides: (await getSlides(deck.slug)).map(slideDto),
   });
+});
+
+// Rename a deck.
+decksRouter.patch("/:slug", requireAuth, async (req: AuthRequest, res) => {
+  const deck = await getDeck(req.params.slug);
+  if (!deck) {
+    res.status(404).json({ error: "Deck not found." });
+    return;
+  }
+  const title = String(req.body?.title || "").trim();
+  if (!title) {
+    res.status(400).json({ error: "A title is required." });
+    return;
+  }
+  await run(`UPDATE decks SET title = $1 WHERE slug = $2`, [title, deck.slug]);
+  res.json({
+    slug: deck.slug,
+    title,
+    slides: (await getSlides(deck.slug)).map(slideDto),
+  });
+});
+
+// Delete a deck. Its slide rows cascade; then remove their uploaded images.
+decksRouter.delete("/:slug", requireAuth, async (req, res) => {
+  const deck = await getDeck(req.params.slug);
+  if (!deck) {
+    res.status(404).json({ error: "Deck not found." });
+    return;
+  }
+  const slides = await getSlides(deck.slug);
+  await run(`DELETE FROM decks WHERE slug = $1`, [deck.slug]);
+  for (const s of slides) await deleteFile(s.file_id);
+  res.json({ ok: true });
 });
 
 // Public: download the whole deck as a single PDF (one slide per page).
