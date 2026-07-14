@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import DOMPurify from "dompurify";
+import { fetchJftText, peekJftText } from "@/lib/jftText";
 
 const DESIGN_W = 1280;
 const DESIGN_H = 720;
@@ -35,22 +36,27 @@ function parseJft(raw: string): Parsed {
 // scales as one unit to fit the slide frame (contain, centered) — so it matches
 // the image slides and fullscreen is just larger, not reflowed.
 export function JftSlide({ isFullscreen = false }: { isFullscreen?: boolean }) {
-  const [parsed, setParsed] = useState<Parsed | null>(null);
+  // Initialize from the prefetched cache when available, so a deck that warmed it
+  // shows the reading immediately with no loading flash.
+  const [parsed, setParsed] = useState<Parsed | null>(() => {
+    const t = peekJftText();
+    return t ? parseJft(t) : null;
+  });
   const [failed, setFailed] = useState(false);
   const [scale, setScale] = useState(0);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (parsed) return; // already have it (prefetched)
     let active = true;
-    fetch("/jftText")
-      .then((r) => (r.ok ? r.text() : Promise.reject()))
+    fetchJftText()
       .then((t) => active && setParsed(parseJft(t)))
       .catch(() => active && setFailed(true));
     return () => {
       active = false;
     };
-  }, []);
+  }, [parsed]);
 
   // Contain-scale the fixed canvas into the wrapper (matches image object-fit).
   useLayoutEffect(() => {

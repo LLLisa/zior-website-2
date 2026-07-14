@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Download, SlidersHorizontal } from "lucide-react";
 import { api, type Deck, type Slide } from "@/lib/api";
+import { prefetchJftText } from "@/lib/jftText";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { SlideViewer } from "@/components/slides/SlideViewer";
@@ -13,6 +14,12 @@ export function SlideDeckPage({ slug }: { slug: string }) {
     "loading",
   );
   const [managing, setManaging] = useState(false);
+
+  // Warm the Just for Today reading as soon as a deck is opened, so the live JFT
+  // slide is ready by the time it's reached (no loading pop-in).
+  useEffect(() => {
+    prefetchJftText();
+  }, []);
 
   useEffect(() => {
     let active = true;

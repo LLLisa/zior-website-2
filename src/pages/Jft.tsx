@@ -1,21 +1,22 @@
 import { useEffect, useState } from "react";
 import { SafeHtml } from "@/components/SafeHtml";
 import { Card, CardContent } from "@/components/ui/card";
+import { fetchJftText, peekJftText } from "@/lib/jftText";
 
 export function Jft() {
-  const [html, setHtml] = useState<string | null>(null);
+  const [html, setHtml] = useState<string | null>(() => peekJftText());
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
+    if (html) return;
     let active = true;
-    fetch("/jftText")
-      .then((r) => (r.ok ? r.text() : Promise.reject()))
+    fetchJftText()
       .then((text) => active && setHtml(text))
       .catch(() => active && setFailed(true));
     return () => {
       active = false;
     };
-  }, []);
+  }, [html]);
 
   return (
     <div className="space-y-4">
