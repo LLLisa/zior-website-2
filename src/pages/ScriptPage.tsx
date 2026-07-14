@@ -1,8 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Download, Upload } from "lucide-react";
 import { api, ApiError, type Script } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+
+// Lazy so pdf.js (a large dependency) only loads when a script is actually viewed.
+const PdfViewer = lazy(() => import("@/components/PdfViewer"));
 
 export function ScriptPage({ slug }: { slug: string }) {
   const { user } = useAuth();
@@ -74,9 +77,13 @@ export function ScriptPage({ slug }: { slug: string }) {
       </div>
 
       {viewerSrc ? (
-        <div className="overflow-hidden rounded-lg border border-border">
-          <embed src={viewerSrc} type="application/pdf" className="h-[80vh] w-full" />
-        </div>
+        <Suspense
+          fallback={
+            <p className="text-sm text-muted-foreground">Loading viewer…</p>
+          }
+        >
+          <PdfViewer src={viewerSrc} />
+        </Suspense>
       ) : (
         <p className="text-muted-foreground">No script has been uploaded yet.</p>
       )}
