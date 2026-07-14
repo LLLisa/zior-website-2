@@ -18,6 +18,8 @@
     "start": "cross-env NODE_ENV=production tsx server/index.ts",
     "typecheck": "tsc -b --noEmit",
     "seed:admin": "tsx server/scripts/make-admin.ts",
+    "cms:drift": "tsx server/scripts/cms-drift.ts",
+    "cms:sync": "tsx server/scripts/cms-sync.ts",
     "mcp:cms": "tsx server/mcp/cms-sync-server.ts"
   },
   "dependencies": {

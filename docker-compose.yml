@@ -29,12 +29,17 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    command: npm run dev:server
+    # Report CMS drift vs the deployed site on startup (read-only, never fails
+    # or blocks — `|| true` and the script itself always exit 0), then run the
+    # API server. Applying changes is a separate, explicit `npm run cms:sync`.
+    command: sh -c "npm run cms:drift || true; exec npm run dev:server"
     environment:
       # Reach Postgres via the compose network, not localhost.
       DATABASE_URL: postgres://postgres:postgres@db:5432/zior_db
       # The dockerized Postgres speaks plain TCP (no SSL).
       DATABASE_SSL: "false"
+      # Deployed site the startup drift check reads from (public GETs only).
+      REMOTE_URL: https://zoominonrecovery.org
       PORT: "1953"
       APP_URL: http://localhost:1953
       SESSION_SECRET: dev-insecure-change-me

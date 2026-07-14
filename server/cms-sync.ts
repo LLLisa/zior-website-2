@@ -534,6 +534,11 @@ export function cmsDrift(): Promise<SyncReport> {
   return syncCms({ dryRun: true });
 }
 
+/** True once a sync has run locally, i.e. there's a baseline to compare against. */
+export function hasSyncBaseline(): boolean {
+  return fs.existsSync(cachePath);
+}
+
 // ---- asset file helpers -----------------------------------------------------
 
 function writeAsset(rel: string, data: Buffer): void {
