@@ -29,65 +29,49 @@ export const PAGES: Array<{ slug: string; title: string; body: string }> = [
   {
     slug: "home",
     title: "Welcome to Zoom In On Recovery!",
-    body: `
-<p>We are an LGBTQIA+ meeting of Narcotics Anonymous, but as the Third Tradition states, the only requirement for membership is a desire to stop using — so <strong>all are welcome here</strong>. We meet every day from 7:00 PM to 8:00 PM Eastern Time. You may join our meeting by clicking the button above or scanning the QR code on your phone.</p>
-<p>Also, please join us 15 minutes before the meeting for fellowship (we call it the "parking lot") and to make sure you can get in. You can stay after the meeting to let us get to know you as well. We look forward to seeing you there!</p>
-<p>The format of the meeting is a book study. We read the Just for Today daily meditation and then our speaker shares for 10–15 minutes on the reading. After that we have open shares until 10 minutes before the end of the meeting, at which time we call for a burning desire. We celebrate anniversaries on the last day of the month, and our business meetings are held every 1st and 3rd Monday an hour before the meeting. Check out <a href="/calendar">our calendar</a> for more information.</p>
-<p>We hope you will join us and find the love and support that we have found in this fellowship. And above all,</p>`.trim(),
+    body: "<p>We are an LGBTQIA+ meeting of Narcotics Anonymous, but as the Third Tradition states, the only requirement for membership is a desire to stop using — so <strong>all are welcome here</strong>. We meet every day from 7:00 PM to 8:00 PM Eastern Time. You may join our meeting by clicking the button above or scanning the QR code on your phone.</p>\n<p>Also, please join us 15 minutes before the meeting for fellowship (we call it the \"parking lot\") and to make sure you can get in. You can stay after the meeting to let us get to know you as well. We look forward to seeing you there!</p>\n<p>The format of the meeting is a book study. We read the Just for Today daily meditation and then our speaker shares for 10–15 minutes on the reading. After that we have open shares until 10 minutes before the end of the meeting, at which time we call for a burning desire. We celebrate anniversaries on the last day of the month, and our business meetings are held every 1st and 3rd Monday an hour before the meeting. Check out <a href=\"/calendar\">our calendar</a> for more information.</p>\n<p>We hope you will join us and find the love and support that we have found in this fellowship. And above all,</p>",
   },
   {
     slug: "about",
     title: "About Us",
-    body: `
-<p>When the country went into lockdown on Friday, March 13, 2020, to prevent the spread of COVID 19, a group of concerned recovering addicts fearing that LGBTQIA+ folk would not have a safe space to continue their recovery created ZIOR.</p>
-<p>Our first official meeting was, March 17, 2020, at 7:00pm EST, and every day since. The group decided that we should meet nightly to assure that our members had a space to process the pandemic as it was unfolding. We named the group, Zoom in on Recovery, because we were acutely aware that we needed to concentrate on bringing NA's spiritual principles into this new environment. We chose the Just for Today daily meditation to provide structure and consistency for our new group.</p>
-<p>We continue meeting and enjoy an attendance of roughly 40 members nightly. Zoom in on Recovery has established a group policy, we contribute quarterly to the Manhattan Area Service Committee, Greater New York Regional Service Committee, and the World Service Committee. We are proud to have started a Basic Text Gift Program, which provides a physical or digital copy to members needing this most essential tool. This program was an extension of and tangible expression of hospitality. We are intentional about welcoming newcomers, maintaining a safe space that is born of our commitment to practicality.</p>
-<p>While we are a special interest group, our meetings are open to everyone! Even those who are just contemplating staying clean. The meeting is a one-hour book study, holds space for a burning desire, and touts a robust parking lot before and after the meeting! On occasion, the parking lot is more formal with a group member facilitating the discussion.</p>`.trim(),
+    body: "<p>When the country went into lockdown on Friday, March 13, 2020, to prevent the spread of COVID 19, a group of concerned recovering addicts fearing that LGBTQIA+ folk would not have a safe space to continue their recovery created ZIOR.</p><p>Our first official meeting was, March 17, 2020, at 7:00pm EST, and every day since. &nbsp;We named the group, <strong>Zoom in on Recovery</strong> because we were acutely aware that we needed to concentrate or drill down on bringing the spiritual principle into this new environment. It is important to note that <strong>this group is not affiliated with Zoom in any way </strong>aside from hosting our meetings on the Zoom platform. Our relationship is the same as an in-person meeting paying rent to a facility for the use of a meeting space.</p><p>While we are a special interest group, our meetings are open to everyone! Newcomers are especially welcome and wanted, because we can only keep what we have by giving it away.</p>",
   },
   {
     slug: "for-the-newcomer",
     title: "For The Newcomer",
-    body: `<p>This is the ForTheNewcomer section. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>`,
+    body: "<p>This is the ForTheNewcomer section. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>",
   },
   {
     slug: "helpful-links",
     title: "Helpful Links",
-    body: `
-<p>This is the Helpful Links section.</p>
-<ul>
-  <li><a href="https://www.na.org/">Narcotics Anonymous</a></li>
-  <li><a href="https://www.na.org/?ID=ips-eng-index">Informational Pamphlets</a></li>
-  <li><a href="https://nadailyinventory.com/">Daily 10th Step Inventory</a></li>
-</ul>`.trim(),
+    body: "<p>This is the Helpful Links section.</p>\n<ul>\n  <li><a href=\"https://www.na.org/\">Narcotics Anonymous</a></li>\n  <li><a href=\"https://www.na.org/?ID=ips-eng-index\">Informational Pamphlets</a></li>\n  <li><a href=\"https://nadailyinventory.com/\">Daily 10th Step Inventory</a></li>\n</ul>",
   },
   {
     slug: "service-at-zior",
     title: "Service at ZIOR",
-    body: `<p>This is the ServiceAtZior section. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>`,
+    body: "<p>This is the ServiceAtZior section. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>",
   },
   {
     slug: "service-at-zior-more",
     title: "More about service",
-    body: `<p>This is a second editable section for the Service at ZIOR page. Trusted servants can sign in below to edit the site's content.</p>`,
+    body: "<p>The content of this website is editable only by the Group Chair or a delegated trusted servant, so they are the only users who are able to sign in. If you would like to suggest changes or corrections to this website, come to our business meeting! It is held the 1st and 3rd Monday of every month at 6pm EST, one hour before the regular meeting,</p>",
   },
   {
     slug: "seventh-tradition",
     title: "7th Tradition",
-    body: `<p>This is the SeventhTradition section. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>`,
+    body: "<p>This is the SeventhTradition section. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>",
   },
 ];
 // </cms-sync:pages>
 
 // <cms-sync:settings> — AUTO-GENERATED; refresh via the cms-sync MCP tool, do not hand-edit.
 export const SETTINGS: Record<string, string> = {
-  site_title: "Zoom In On Recovery",
-  zoom_url:
-    "https://us02web.zoom.us/j/75907342333?pwd=MFd0OGo5dzBSbHIzY1ZORUw5Y09xZz09",
-  meeting_start: "19:00",
-  meeting_end: "20:00",
-  meeting_tz: "America/New_York",
-  calendar_embed_src:
-    "https://calendar.google.com/calendar/embed?src=0994f22fd2f97cedaa5213db3b2b8ab0f2325b0ec366356ec8aefc4dfd4b8f9f%40group.calendar.google.com&ctz=America%2FNew_York",
+  "site_title": "Zoom In On Recovery",
+  "zoom_url": "https://us02web.zoom.us/j/75907342333?pwd=MFd0OGo5dzBSbHIzY1ZORUw5Y09xZz09",
+  "meeting_start": "19:00",
+  "meeting_end": "20:00",
+  "meeting_tz": "America/New_York",
+  "calendar_embed_src": "https://calendar.google.com/calendar/embed?src=0994f22fd2f97cedaa5213db3b2b8ab0f2325b0ec366356ec8aefc4dfd4b8f9f%40group.calendar.google.com&ctz=America%2FNew_York",
 };
 // </cms-sync:settings>
 

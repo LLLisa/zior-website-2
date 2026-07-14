@@ -1,0 +1,193 @@
+{
+  "syncedAt": "2026-07-14T15:04:59.982Z",
+  "decks": [
+    {
+      "slug": "anniversary",
+      "title": "Anniversary Meeting Slides",
+      "slides": [
+        {
+          "kind": "image",
+          "file": "slides/anniversary/00.png",
+          "alt": "This is the intro screen",
+          "hash": "78eef1880addec19e6200bacc36b1189a639d38cfa48a6a5a297fc4549726ef1"
+        },
+        {
+          "kind": "jft",
+          "file": null,
+          "alt": "Just for Today",
+          "hash": null
+        },
+        {
+          "kind": "image",
+          "file": "slides/anniversary/02.png",
+          "alt": "Who is an addict?",
+          "hash": "9e2480282dbcf4af89985a47012c4a9b1fa0d9b0090466d74dc6c1e0e0b3250a"
+        },
+        {
+          "kind": "image",
+          "file": "slides/anniversary/03.png",
+          "alt": "What is the NA program?",
+          "hash": "3d7465e7c0252f6dfa9e0d06f80d53fae06822be3b78989152654c8b2b892b60"
+        },
+        {
+          "kind": "image",
+          "file": "slides/anniversary/04.png",
+          "alt": "Why are we here?",
+          "hash": "1e451280f0be559dedbfa818d072b424e8a48a287318e9cf78a92c3ca1056189"
+        },
+        {
+          "kind": "image",
+          "file": "slides/anniversary/05.png",
+          "alt": "How it works, part 1",
+          "hash": "37069289e3ab70a7f3f75c1fc444fbca5928729edfaa78ee10f821768b6a8b78"
+        },
+        {
+          "kind": "image",
+          "file": "slides/anniversary/06.png",
+          "alt": "How it works, part 2",
+          "hash": "4d3e2b40af541bebff4ed3bcba67ad1a9f641ba817f698e0a6ea2f5a9b3d71eb"
+        },
+        {
+          "kind": "image",
+          "file": "slides/anniversary/07.png",
+          "alt": "7th Tradition",
+          "hash": "08fea1c703e7cfcc3ce5bb9ad5d9380d00e89adf58238e5acadb71a694006aa0"
+        },
+        {
+          "kind": "image",
+          "file": "slides/anniversary/08.png",
+          "alt": "Clean time countdown start",
+          "hash": "a1af390e3070eeae207c5f861b3feafece860961f056e03a7710dcaca56fcb47"
+        },
+        {
+          "kind": "image",
+          "file": "slides/anniversary/09.png",
+          "alt": "Multiple years clean",
+          "hash": "e677ef5d948ddbbf4e48f0636d364422cc57b7d2d23ddcdc5a14b3adfe39cbb0"
+        },
+        {
+          "kind": "image",
+          "file": "slides/anniversary/10.png",
+          "alt": "18 months clean",
+          "hash": "841d56b1e4537c5d449800d99d6459df8b9513993eaf5ac6bc1114fb1b496481"
+        },
+        {
+          "kind": "image",
+          "file": "slides/anniversary/11.png",
+          "alt": "1 year clean",
+          "hash": "34c9df6fa79e5dfa97ed9c13c5fb45eeae381dd9f229ccaedff97be5e5b0e326"
+        },
+        {
+          "kind": "image",
+          "file": "slides/anniversary/12.png",
+          "alt": "9 months clean",
+          "hash": "25895d3b650999cbdb982a2723957b1e66f63cb2996ae30d6a70a928bb41505a"
+        },
+        {
+          "kind": "image",
+          "file": "slides/anniversary/13.png",
+          "alt": "6 months clean",
+          "hash": "c28fedd94656fa50b0ebaa61cd53f3c2ba221c48316229d93ab854a1ee2689d3"
+        },
+        {
+          "kind": "image",
+          "file": "slides/anniversary/14.png",
+          "alt": "3 months clean",
+          "hash": "8fadcc362ea0b219f0de1d7c42e83a0d36d8be0fad5a375118dbfe0b50967706"
+        },
+        {
+          "kind": "image",
+          "file": "slides/anniversary/15.png",
+          "alt": "60 days clean",
+          "hash": "db978f432c60c058a69367b8194b5ad448d7f09f1dfd649fd1e013b52c0a3108"
+        },
+        {
+          "kind": "image",
+          "file": "slides/anniversary/16.png",
+          "alt": "30 days clean",
+          "hash": "8c27882a387dfe967c91afc0f43577b7554449f659f2ba65733d2c63e0bf34be"
+        },
+        {
+          "kind": "image",
+          "file": "slides/anniversary/17.png",
+          "alt": "Just for today",
+          "hash": "803eb093c249691717f0b97cdfcdcc68b61d43a3fe14be540bc80cecb65068fe"
+        },
+        {
+          "kind": "image",
+          "file": "slides/anniversary/18.png",
+          "alt": "Welcome to the family",
+          "hash": "9fa12183cb60f66bc4c3fe301f697a7942c0f5bb6e3d37769022dbbad4e3b17f"
+        }
+      ]
+    },
+    {
+      "slug": "daily",
+      "title": "Daily Meeting Slides",
+      "slides": [
+        {
+          "kind": "image",
+          "file": "slides/daily/00.png",
+          "alt": "This is the intro screen",
+          "hash": "78eef1880addec19e6200bacc36b1189a639d38cfa48a6a5a297fc4549726ef1"
+        },
+        {
+          "kind": "image",
+          "file": "slides/daily/01.png",
+          "alt": "Who is an addict?",
+          "hash": "9e2480282dbcf4af89985a47012c4a9b1fa0d9b0090466d74dc6c1e0e0b3250a"
+        },
+        {
+          "kind": "image",
+          "file": "slides/daily/02.png",
+          "alt": "What is the NA program?",
+          "hash": "3d7465e7c0252f6dfa9e0d06f80d53fae06822be3b78989152654c8b2b892b60"
+        },
+        {
+          "kind": "image",
+          "file": "slides/daily/03.png",
+          "alt": "Why are we here?",
+          "hash": "1e451280f0be559dedbfa818d072b424e8a48a287318e9cf78a92c3ca1056189"
+        },
+        {
+          "kind": "image",
+          "file": "slides/daily/04.png",
+          "alt": "How it works, part 1",
+          "hash": "37069289e3ab70a7f3f75c1fc444fbca5928729edfaa78ee10f821768b6a8b78"
+        },
+        {
+          "kind": "image",
+          "file": "slides/daily/05.png",
+          "alt": "How it works, part 2",
+          "hash": "4d3e2b40af541bebff4ed3bcba67ad1a9f641ba817f698e0a6ea2f5a9b3d71eb"
+        },
+        {
+          "kind": "jft",
+          "file": null,
+          "alt": "Just for Today",
+          "hash": null
+        },
+        {
+          "kind": "image",
+          "file": "slides/daily/07.png",
+          "alt": "7th Tradition",
+          "hash": "08fea1c703e7cfcc3ce5bb9ad5d9380d00e89adf58238e5acadb71a694006aa0"
+        }
+      ]
+    }
+  ],
+  "scripts": [
+    {
+      "slug": "anniversary",
+      "title": "Anniversary Meeting Script",
+      "file": "scripts/anniversary.pdf",
+      "hash": "e434c8484d8898d657b609ff87d058bbf4de3d5023bd88bcc7a118cc870a79d4"
+    },
+    {
+      "slug": "daily",
+      "title": "Daily Meeting Script",
+      "file": "scripts/daily.pdf",
+      "hash": "4c58e9524f040ad89bb525724eef7a85e5ba549a60bed2f24d5fca751c24e4fd"
+    }
+  ]
+}
