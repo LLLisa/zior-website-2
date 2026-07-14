@@ -64,7 +64,7 @@ export const config = {
   secretsDir: path.join(root, "secrets"),
 
   // Auth timings.
-  loginTokenTtlMs: 15 * 60 * 1000, // magic link valid for 15 minutes
+  loginTokenTtlMs: 60 * 60 * 1000, // magic link valid for 1 hour
   sessionTtlMs: 30 * 24 * 60 * 60 * 1000, // session cookie lasts 30 days
   cookieName: "zior_session",
 };
