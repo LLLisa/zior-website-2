@@ -18,7 +18,10 @@ pool.on("error", (err) => {
   console.error("Unexpected idle Postgres client error:", err.message);
 });
 
-export async function all<T>(text: string, params: unknown[] = []): Promise<T[]> {
+export async function all<T>(
+  text: string,
+  params: unknown[] = [],
+): Promise<T[]> {
   const res = await pool.query(text, params);
   return res.rows as T[];
 }
@@ -78,8 +81,9 @@ export async function initDb() {
     );
 
     CREATE TABLE IF NOT EXISTS decks (
-      slug  TEXT PRIMARY KEY,
-      title TEXT NOT NULL
+      slug       TEXT PRIMARY KEY,
+      title      TEXT NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
 
     CREATE TABLE IF NOT EXISTS slides (
@@ -119,10 +123,17 @@ export async function initDb() {
   await pool.query(
     `ALTER TABLE users ADD COLUMN IF NOT EXISTS name TEXT NOT NULL DEFAULT ''`,
   );
+  // When each deck was last changed. Existing rows are backfilled to now() by
+  // the DEFAULT, so every deck has a timestamp from this migration forward.
+  await pool.query(
+    `ALTER TABLE decks ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now()`,
+  );
 
   // Keep the table count low (Heroku essential-0 caps rows): drop expired auth rows.
   await pool.query(`DELETE FROM sessions WHERE expires_at < $1`, [Date.now()]);
-  await pool.query(`DELETE FROM login_tokens WHERE expires_at < $1`, [Date.now()]);
+  await pool.query(`DELETE FROM login_tokens WHERE expires_at < $1`, [
+    Date.now(),
+  ]);
 }
 
 /**
@@ -158,7 +169,7 @@ export type PageRow = {
   updated_by: string | null;
 };
 
-export type DeckRow = { slug: string; title: string };
+export type DeckRow = { slug: string; title: string; updated_at: string };
 
 export type SlideRow = {
   id: number;

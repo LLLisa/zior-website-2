@@ -22,7 +22,12 @@ export type Slide = {
   src: string | null;
 };
 
-export type Deck = { slug: string; title: string; slides: Slide[] };
+export type Deck = {
+  slug: string;
+  title: string;
+  updatedAt: string;
+  slides: Slide[];
+};
 
 export type Script = {
   slug: string;
@@ -56,9 +61,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     credentials: "same-origin",
     ...init,
   });
-  const isJson = res.headers
-    .get("content-type")
-    ?.includes("application/json");
+  const isJson = res.headers.get("content-type")?.includes("application/json");
   const data = isJson ? await res.json() : await res.text();
   if (!res.ok) {
     const message =
@@ -102,7 +105,10 @@ export const api = {
     const fd = new FormData();
     fd.append("image", file);
     fd.append("alt", alt);
-    return request<Slide>(`/api/decks/${slug}/slides`, { method: "POST", body: fd });
+    return request<Slide>(`/api/decks/${slug}/slides`, {
+      method: "POST",
+      body: fd,
+    });
   },
   addJftSlide: (slug: string) =>
     request<Slide>(`/api/decks/${slug}/jft-slide`, { method: "POST" }),

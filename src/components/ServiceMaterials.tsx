@@ -38,11 +38,24 @@ type Material = {
   slug: string;
   title: string;
   to: string;
+  updatedAt: string | null;
 };
 
 // Scripts and decks live in separate tables, so a script and a deck can share a
 // slug (e.g. both "daily"). Key the UI by type + slug to keep them distinct.
 const keyOf = (m: Material) => `${m.type}:${m.slug}`;
+
+// "Jul 20, 2026". Empty for a missing or unparseable date.
+function formatUpdated(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 
 export function ServiceMaterials() {
   const { user } = useAuth();
@@ -86,12 +99,14 @@ export function ServiceMaterials() {
       slug: s.slug,
       title: s.title,
       to: `/scripts/${s.slug}`,
+      updatedAt: s.updatedAt,
     })),
     ...decks.map((d) => ({
       type: "deck" as const,
       slug: d.slug,
       title: d.title,
       to: `/decks/${d.slug}`,
+      updatedAt: d.updatedAt,
     })),
   ].sort((a, b) => a.title.localeCompare(b.title));
 
@@ -300,10 +315,17 @@ export function ServiceMaterials() {
                     <div className="flex items-center gap-1 pr-1">
                       <Link
                         to={m.to}
-                        className="flex flex-1 items-center gap-3 p-4 font-medium"
+                        className="flex flex-1 items-center gap-3 p-4"
                       >
                         <Icon className="size-5 shrink-0 text-primary" />
-                        {m.title}
+                        <span className="flex flex-col">
+                          <span className="font-medium">{m.title}</span>
+                          {formatUpdated(m.updatedAt) && (
+                            <span className="text-xs text-muted-foreground">
+                              Updated {formatUpdated(m.updatedAt)}
+                            </span>
+                          )}
+                        </span>
                       </Link>
                       {editMode && (
                         <>
