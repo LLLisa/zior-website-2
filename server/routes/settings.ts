@@ -1,7 +1,7 @@
 import { Router, type Response } from "express";
 import { all, run } from "../db";
 import { storeFile, deleteFile } from "../files";
-import { requireAuth, type AuthRequest } from "../auth";
+import { requireAdmin, type AuthRequest } from "../auth";
 import { imageUpload } from "../uploads";
 
 export const settingsRouter = Router();
@@ -41,7 +41,7 @@ settingsRouter.get("/", async (_req, res) => {
   res.json(toDto(await readSettings()));
 });
 
-settingsRouter.put("/", requireAuth, async (req: AuthRequest, res) => {
+settingsRouter.put("/", requireAdmin, async (req: AuthRequest, res) => {
   const body = req.body ?? {};
   for (const key of Object.keys(body)) {
     if (!EDITABLE.has(key)) continue;
@@ -86,7 +86,7 @@ function removeImage(settingKey: string) {
 // Replace the QR code image.
 settingsRouter.put(
   "/qr",
-  requireAuth,
+  requireAdmin,
   imageUpload.single("image"),
   putImage("qr_file_id"),
 );
@@ -94,12 +94,12 @@ settingsRouter.put(
 // The 7th Tradition slide shown below the text on that page.
 settingsRouter.put(
   "/seventh-tradition",
-  requireAuth,
+  requireAdmin,
   imageUpload.single("image"),
   putImage("seventh_tradition_file_id"),
 );
 settingsRouter.delete(
   "/seventh-tradition",
-  requireAuth,
+  requireAdmin,
   removeImage("seventh_tradition_file_id"),
 );

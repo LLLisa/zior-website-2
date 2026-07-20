@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { all, one, run, type UserRow } from "../db";
-import { requireAuth, type AuthRequest } from "../auth";
+import { requireAdmin, type AuthRequest } from "../auth";
 
 export const usersRouter = Router();
 
@@ -30,7 +30,9 @@ function canManage(actor: UserRow, target: UserRow): boolean {
   return actor.is_admin ? true : !target.is_admin;
 }
 
-usersRouter.use(requireAuth);
+// User management is admin-only. The per-operation checks below still guard
+// against an admin deleting the last admin, etc.
+usersRouter.use(requireAdmin);
 
 usersRouter.get("/", async (_req, res) => {
   const users = await all<UserRow>(`SELECT * FROM users ORDER BY email`);
@@ -39,7 +41,9 @@ usersRouter.get("/", async (_req, res) => {
 
 usersRouter.post("/", async (req: AuthRequest, res) => {
   const actor = req.user!;
-  const email = String(req.body?.email || "").trim().toLowerCase();
+  const email = String(req.body?.email || "")
+    .trim()
+    .toLowerCase();
   const name = String(req.body?.name ?? "").trim();
   const isAdmin = !!req.body?.isAdmin;
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
@@ -87,7 +91,10 @@ usersRouter.patch("/:id", async (req: AuthRequest, res) => {
       res.status(400).json({ error: "You can't remove the last admin." });
       return;
     }
-    await run(`UPDATE users SET is_admin = $1 WHERE id = $2`, [isAdmin, target.id]);
+    await run(`UPDATE users SET is_admin = $1 WHERE id = $2`, [
+      isAdmin,
+      target.id,
+    ]);
   }
   res.json(dto((await getUser(target.id))!));
 });
