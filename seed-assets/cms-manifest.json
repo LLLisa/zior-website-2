@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-07-20T13:26:27.925Z",
+  "syncedAt": "2026-07-20T15:36:40.222Z",
   "decks": [
     {
       "slug": "anniversary",
@@ -202,22 +202,10 @@
   ],
   "scripts": [
     {
-      "slug": "anniversary",
-      "title": "Anniversary Meeting Script",
-      "file": "scripts/anniversary.pdf",
-      "hash": "e434c8484d8898d657b609ff87d058bbf4de3d5023bd88bcc7a118cc870a79d4"
-    },
-    {
       "slug": "anniversary-meeting-script",
       "title": "Anniversary Meeting Script",
       "file": "scripts/anniversary-meeting-script.pdf",
       "hash": "09660ae4a1c7aa830360870664e1764f9e6690c8bc481645ec198cd1165a55f6"
-    },
-    {
-      "slug": "daily",
-      "title": "Daily Meeting Script",
-      "file": "scripts/daily.pdf",
-      "hash": "4c58e9524f040ad89bb525724eef7a85e5ba549a60bed2f24d5fca751c24e4fd"
     },
     {
       "slug": "daily-meeting-script",
