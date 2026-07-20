@@ -24,7 +24,10 @@ async function readSettings(): Promise<Record<string, string>> {
 }
 
 function toDto(s: Record<string, string>) {
-  const { qr_file_id, seventh_tradition_file_id, ...rest } = s;
+  // seed_completed_at is an internal seed marker, not a public setting.
+  const { qr_file_id, seventh_tradition_file_id, seed_completed_at, ...rest } =
+    s;
+  void seed_completed_at;
   return {
     ...rest,
     qrUrl: qr_file_id ? `/uploads/${qr_file_id}` : null,
@@ -81,7 +84,12 @@ function removeImage(settingKey: string) {
 }
 
 // Replace the QR code image.
-settingsRouter.put("/qr", requireAuth, imageUpload.single("image"), putImage("qr_file_id"));
+settingsRouter.put(
+  "/qr",
+  requireAuth,
+  imageUpload.single("image"),
+  putImage("qr_file_id"),
+);
 
 // The 7th Tradition slide shown below the text on that page.
 settingsRouter.put(

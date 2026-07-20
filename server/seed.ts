@@ -29,7 +29,7 @@ export const PAGES: Array<{ slug: string; title: string; body: string }> = [
   {
     slug: "home",
     title: "Welcome to Zoom In On Recovery!",
-    body: "<p>We are an LGBTQIA+ meeting of Narcotics Anonymous, but as the Third Tradition states, the only requirement for membership is a desire to stop using — so <strong>all are welcome here</strong>. We meet every day from 7:00 PM to 8:00 PM Eastern Time. You may join our meeting by clicking the button above or scanning the QR code on your phone.</p>\n<p>Also, please join us 15 minutes before the meeting for fellowship (we call it the \"parking lot\") and to make sure you can get in. You can stay after the meeting to let us get to know you as well. We look forward to seeing you there!</p>\n<p>The format of the meeting is a book study. We read the Just for Today daily meditation and then our speaker shares for 10–15 minutes on the reading. After that we have open shares until 10 minutes before the end of the meeting, at which time we call for a burning desire. We celebrate anniversaries on the last day of the month, and our business meetings are held every 1st and 3rd Monday an hour before the meeting. Check out <a href=\"/calendar\">our calendar</a> for more information.</p>\n<p>We hope you will join us and find the love and support that we have found in this fellowship. And above all,</p>",
+    body: '<p>We are an LGBTQIA+ meeting of Narcotics Anonymous, but as the Third Tradition states, the only requirement for membership is a desire to stop using — so <strong>all are welcome here</strong>. We meet every day from 7:00 PM to 8:00 PM Eastern Time. You may join our meeting by clicking the button above or scanning the QR code on your phone.</p>\n<p>Also, please join us 15 minutes before the meeting for fellowship (we call it the "parking lot") and to make sure you can get in. You can stay after the meeting to let us get to know you as well. We look forward to seeing you there!</p>\n<p>The format of the meeting is a book study. We read the Just for Today daily meditation and then our speaker shares for 10–15 minutes on the reading. After that we have open shares until 10 minutes before the end of the meeting, at which time we call for a burning desire. We celebrate anniversaries on the last day of the month, and our business meetings are held every 1st and 3rd Monday an hour before the meeting. Check out <a href="/calendar">our calendar</a> for more information.</p>\n<p>We hope you will join us and find the love and support that we have found in this fellowship. And above all,</p>',
   },
   {
     slug: "about",
@@ -44,7 +44,7 @@ export const PAGES: Array<{ slug: string; title: string; body: string }> = [
   {
     slug: "helpful-links",
     title: "Helpful Links",
-    body: "<p>This is the Helpful Links section.</p>\n<ul>\n  <li><a href=\"https://www.na.org/\">Narcotics Anonymous</a></li>\n  <li><a href=\"https://www.na.org/?ID=ips-eng-index\">Informational Pamphlets</a></li>\n  <li><a href=\"https://nadailyinventory.com/\">Daily 10th Step Inventory</a></li>\n</ul>",
+    body: '<p>This is the Helpful Links section.</p>\n<ul>\n  <li><a href="https://www.na.org/">Narcotics Anonymous</a></li>\n  <li><a href="https://www.na.org/?ID=ips-eng-index">Informational Pamphlets</a></li>\n  <li><a href="https://nadailyinventory.com/">Daily 10th Step Inventory</a></li>\n</ul>',
   },
   {
     slug: "service-at-zior",
@@ -66,12 +66,14 @@ export const PAGES: Array<{ slug: string; title: string; body: string }> = [
 
 // <cms-sync:settings> — AUTO-GENERATED; refresh via the cms-sync MCP tool, do not hand-edit.
 export const SETTINGS: Record<string, string> = {
-  "site_title": "Zoom In On Recovery",
-  "zoom_url": "https://us02web.zoom.us/j/75907342333?pwd=MFd0OGo5dzBSbHIzY1ZORUw5Y09xZz09",
-  "meeting_start": "19:00",
-  "meeting_end": "20:00",
-  "meeting_tz": "America/New_York",
-  "calendar_embed_src": "https://calendar.google.com/calendar/embed?src=0994f22fd2f97cedaa5213db3b2b8ab0f2325b0ec366356ec8aefc4dfd4b8f9f%40group.calendar.google.com&ctz=America%2FNew_York",
+  site_title: "Zoom In On Recovery",
+  zoom_url:
+    "https://us02web.zoom.us/j/75907342333?pwd=MFd0OGo5dzBSbHIzY1ZORUw5Y09xZz09",
+  meeting_start: "19:00",
+  meeting_end: "20:00",
+  meeting_tz: "America/New_York",
+  calendar_embed_src:
+    "https://calendar.google.com/calendar/embed?src=0994f22fd2f97cedaa5213db3b2b8ab0f2325b0ec366356ec8aefc4dfd4b8f9f%40group.calendar.google.com&ctz=America%2FNew_York",
 };
 // </cms-sync:settings>
 
@@ -105,7 +107,11 @@ const ANNIVERSARY_EXTRA = [
   ["welcomeHome.png", "Welcome to the family"],
 ];
 
-function toDeckSpec(slug: string, title: string, list: string[][]): ManifestDeck {
+function toDeckSpec(
+  slug: string,
+  title: string,
+  list: string[][],
+): ManifestDeck {
   return {
     slug,
     title,
@@ -141,7 +147,64 @@ const DEFAULT_SCRIPTS: ManifestScript[] = [
   },
 ];
 
+// Written to `settings` once the defaults have been laid down (or once an
+// existing database has been adopted as the source of truth). Its presence is
+// what stops a dyno restart from re-seeding — and thereby resurrecting rows a
+// trusted servant has deliberately deleted.
+const SEED_MARKER_KEY = "seed_completed_at";
+
+async function isSeeded(): Promise<boolean> {
+  const row = await one(`SELECT value FROM settings WHERE key = $1`, [
+    SEED_MARKER_KEY,
+  ]);
+  return Boolean(row);
+}
+
+/** True if the database already holds seedable content (an established site). */
+async function hasExistingContent(): Promise<boolean> {
+  const row = await one<{ n: string }>(
+    `SELECT (SELECT COUNT(*) FROM pages)
+          + (SELECT COUNT(*) FROM scripts)
+          + (SELECT COUNT(*) FROM decks) AS n`,
+  );
+  return Number(row?.n ?? 0) > 0;
+}
+
+async function markSeeded(): Promise<void> {
+  await run(
+    `INSERT INTO settings (key, value) VALUES ($1, now()::text)
+     ON CONFLICT (key) DO NOTHING`,
+    [SEED_MARKER_KEY],
+  );
+}
+
+/** Ensure the configured admin can always sign in. Access recovery, not content. */
+async function ensureAdmin(): Promise<void> {
+  if (!config.adminEmail) return;
+  await run(
+    `INSERT INTO users (email, is_admin) VALUES ($1, TRUE)
+     ON CONFLICT (email) DO UPDATE SET is_admin = TRUE`,
+    [config.adminEmail],
+  );
+}
+
 export async function seed() {
+  // Always keep admin access working, regardless of seed state.
+  await ensureAdmin();
+
+  // Seed exactly once in a database's lifetime. After that the database — most
+  // importantly production — is the sole source of truth, so a restart never
+  // re-adds content that was deleted through the app.
+  if (await isSeeded()) return;
+
+  // A database that predates this marker but already has content (i.e. the
+  // live production site) is adopted as-is: record the marker and seed nothing.
+  if (await hasExistingContent()) {
+    await markSeeded();
+    return;
+  }
+
+  // From here down we know the database is empty — lay down bundled defaults.
   for (const p of PAGES) {
     await run(
       `INSERT INTO pages (slug, title, body_html, updated_by)
@@ -188,7 +251,8 @@ export async function seed() {
   const deckSpecs = manifest?.decks ?? DEFAULT_DECKS;
   const scriptSpecs = manifest?.scripts ?? DEFAULT_SCRIPTS;
 
-  // Decks/slides only on a fresh database so deletions aren't resurrected.
+  // Reached only on a fresh database (see the guards at the top of seed), so
+  // this extra check is belt-and-suspenders against a partially-populated DB.
   const deckCount = await one<{ count: string }>(`SELECT COUNT(*) FROM decks`);
   if (Number(deckCount?.count ?? 0) === 0) {
     for (const d of deckSpecs) {
@@ -217,11 +281,13 @@ export async function seed() {
     }
   }
 
-  // Ensure each meeting deck has the live "Just for Today" slide, placed right
-  // after the intro. Idempotent, so it also lands in an already-seeded database
-  // (and is skipped when a manifest deck already includes its own jft slide).
+  // Ensure each freshly-seeded meeting deck has the live "Just for Today" slide,
+  // placed right after the intro (skipped when a manifest deck already includes
+  // its own jft slide).
   for (const deckSlug of ["daily", "anniversary"]) {
-    const deck = await one(`SELECT slug FROM decks WHERE slug = $1`, [deckSlug]);
+    const deck = await one(`SELECT slug FROM decks WHERE slug = $1`, [
+      deckSlug,
+    ]);
     if (!deck) continue;
     const hasJft = await one(
       `SELECT id FROM slides WHERE deck_slug = $1 AND kind = 'jft'`,
@@ -252,11 +318,5 @@ export async function seed() {
     );
   }
 
-  if (config.adminEmail) {
-    await run(
-      `INSERT INTO users (email, is_admin) VALUES ($1, TRUE)
-       ON CONFLICT (email) DO UPDATE SET is_admin = TRUE`,
-      [config.adminEmail],
-    );
-  }
+  await markSeeded();
 }
