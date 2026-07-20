@@ -28,6 +28,20 @@ function getDeck(slug: string) {
   return one<DeckRow>(`SELECT * FROM decks WHERE slug = $1`, [slug]);
 }
 
+async function deckDto(deck: DeckRow) {
+  return {
+    slug: deck.slug,
+    title: deck.title,
+    updatedAt: deck.updated_at,
+    slides: (await getSlides(deck.slug)).map(slideDto),
+  };
+}
+
+/** Mark a deck as just-changed so its "last updated" reflects slide edits too. */
+function touchDeck(slug: string) {
+  return run(`UPDATE decks SET updated_at = now() WHERE slug = $1`, [slug]);
+}
+
 // Render the live Just for Today reading as one or more slides matching the
 // deck: the navy background image, a yellow header, and white body text.
 async function drawJftPages(pdf: PDFDocument) {
@@ -60,7 +74,14 @@ async function drawJftPages(pdf: PDFDocument) {
   const newPage = () => {
     const page = pdf.addPage([W, H]);
     if (bg) page.drawImage(bg, { x: 0, y: 0, width: W, height: H });
-    else page.drawRectangle({ x: 0, y: 0, width: W, height: H, color: rgb(0.04, 0.1, 0.17) });
+    else
+      page.drawRectangle({
+        x: 0,
+        y: 0,
+        width: W,
+        height: H,
+        color: rgb(0.04, 0.1, 0.17),
+      });
     return page;
   };
 
@@ -89,7 +110,8 @@ async function drawJftPages(pdf: PDFDocument) {
   }
   const lineH = size * 1.35;
   for (const line of lines) {
-    if (line) page.drawText(line, { x: margin, y, size, font: body, color: white });
+    if (line)
+      page.drawText(line, { x: margin, y, size, font: body, color: white });
     y -= lineH;
   }
 }
@@ -105,11 +127,7 @@ decksRouter.get("/", async (_req, res) => {
   const decks = await all<DeckRow>(`SELECT * FROM decks ORDER BY slug`);
   const out = [];
   for (const d of decks) {
-    out.push({
-      slug: d.slug,
-      title: d.title,
-      slides: (await getSlides(d.slug)).map(slideDto),
-    });
+    out.push(await deckDto(d));
   }
   res.json(out);
 });
@@ -122,8 +140,11 @@ decksRouter.post("/", requireAuth, async (req: AuthRequest, res) => {
     return;
   }
   const slug = await uniqueSlug("decks", title);
-  await run(`INSERT INTO decks (slug, title) VALUES ($1, $2)`, [slug, title]);
-  res.status(201).json({ slug, title, slides: [] });
+  const created = await one<DeckRow>(
+    `INSERT INTO decks (slug, title) VALUES ($1, $2) RETURNING *`,
+    [slug, title],
+  );
+  res.status(201).json(await deckDto(created!));
 });
 
 decksRouter.get("/:slug", async (req, res) => {
@@ -132,11 +153,7 @@ decksRouter.get("/:slug", async (req, res) => {
     res.status(404).json({ error: "Deck not found." });
     return;
   }
-  res.json({
-    slug: deck.slug,
-    title: deck.title,
-    slides: (await getSlides(deck.slug)).map(slideDto),
-  });
+  res.json(await deckDto(deck));
 });
 
 // Rename a deck.
@@ -151,12 +168,11 @@ decksRouter.patch("/:slug", requireAuth, async (req: AuthRequest, res) => {
     res.status(400).json({ error: "A title is required." });
     return;
   }
-  await run(`UPDATE decks SET title = $1 WHERE slug = $2`, [title, deck.slug]);
-  res.json({
-    slug: deck.slug,
-    title,
-    slides: (await getSlides(deck.slug)).map(slideDto),
-  });
+  const updated = await one<DeckRow>(
+    `UPDATE decks SET title = $1, updated_at = now() WHERE slug = $2 RETURNING *`,
+    [title, deck.slug],
+  );
+  res.json(await deckDto(updated!));
 });
 
 // Delete a deck. Its slide rows cascade; then remove their uploaded images.
@@ -241,6 +257,7 @@ decksRouter.post(
         contentHash(req.file.buffer),
       ],
     );
+    await touchDeck(deck.slug);
     res.status(201).json(slideDto(slide!));
   },
 );
@@ -257,7 +274,9 @@ decksRouter.post("/:slug/jft-slide", requireAuth, async (req, res) => {
     [deck.slug],
   );
   if (existing) {
-    res.status(409).json({ error: "This deck already has a Just for Today slide." });
+    res
+      .status(409)
+      .json({ error: "This deck already has a Just for Today slide." });
     return;
   }
   const next = await one<{ p: number }>(
@@ -269,6 +288,7 @@ decksRouter.post("/:slug/jft-slide", requireAuth, async (req, res) => {
      VALUES ($1, NULL, 'Just for Today', $2, 'jft') RETURNING *`,
     [deck.slug, next!.p],
   );
+  await touchDeck(deck.slug);
   res.status(201).json(slideDto(slide!));
 });
 
@@ -285,12 +305,12 @@ decksRouter.put("/:slug/order", requireAuth, async (req: AuthRequest, res) => {
     return;
   }
   for (let i = 0; i < ids.length; i++) {
-    await run(`UPDATE slides SET position = $1 WHERE id = $2 AND deck_slug = $3`, [
-      i,
-      ids[i],
-      deck.slug,
-    ]);
+    await run(
+      `UPDATE slides SET position = $1 WHERE id = $2 AND deck_slug = $3`,
+      [i, ids[i], deck.slug],
+    );
   }
+  await touchDeck(deck.slug);
   res.json({ slides: (await getSlides(deck.slug)).map(slideDto) });
 });
 
@@ -304,6 +324,7 @@ slidesRouter.patch("/:id", requireAuth, async (req: AuthRequest, res) => {
   }
   const alt = String(req.body?.alt ?? "");
   await run(`UPDATE slides SET alt = $1 WHERE id = $2`, [alt, slide.id]);
+  await touchDeck(slide.deck_slug);
   res.json(slideDto({ ...slide, alt }));
 });
 
@@ -317,5 +338,6 @@ slidesRouter.delete("/:id", requireAuth, async (req: AuthRequest, res) => {
   }
   await run(`DELETE FROM slides WHERE id = $1`, [slide.id]);
   if (slide.file_id) await deleteFile(slide.file_id);
+  await touchDeck(slide.deck_slug);
   res.json({ ok: true });
 });
