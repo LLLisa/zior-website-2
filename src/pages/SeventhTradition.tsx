@@ -21,6 +21,8 @@ import {
 // the QR code) and shown full width below the page text.
 function SeventhTraditionSlide() {
   const { user } = useAuth();
+  // The 7th Tradition image is a site setting, so only admins may edit it.
+  const canEdit = !!user?.isAdmin;
   const { settings, setSettings } = useSettings();
   const [editMode, setEditMode] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -57,11 +59,11 @@ function SeventhTraditionSlide() {
   };
 
   // Nothing to show and nothing to manage.
-  if (!url && !user) return null;
+  if (!url && !canEdit) return null;
 
   return (
     <section className="pt-2">
-      {user && (
+      {canEdit && (
         <div className="mb-2 flex justify-end">
           <Button
             variant="outline"
@@ -92,10 +94,12 @@ function SeventhTraditionSlide() {
         />
       )}
 
-      {user && editMode && (
+      {canEdit && editMode && (
         <div className="mt-3 space-y-2 rounded-lg border border-dashed border-border p-4">
           <p className="text-sm font-medium">
-            {url ? "Replace the 7th Tradition slide" : "Add a 7th Tradition slide"}
+            {url
+              ? "Replace the 7th Tradition slide"
+              : "Add a 7th Tradition slide"}
           </p>
           <input
             ref={fileRef}
@@ -106,7 +110,8 @@ function SeventhTraditionSlide() {
           {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="flex gap-2">
             <Button onClick={upload} disabled={busy}>
-              <Upload /> {busy ? "Uploading…" : url ? "Replace image" : "Upload image"}
+              <Upload />{" "}
+              {busy ? "Uploading…" : url ? "Replace image" : "Upload image"}
             </Button>
             {url && (
               <AlertDialog>
@@ -120,10 +125,12 @@ function SeventhTraditionSlide() {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Remove the 7th Tradition slide?</AlertDialogTitle>
+                    <AlertDialogTitle>
+                      Remove the 7th Tradition slide?
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
-                      The image will no longer appear on this page. You can upload a new
-                      one anytime.
+                      The image will no longer appear on this page. You can
+                      upload a new one anytime.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -148,7 +155,10 @@ function SeventhTraditionSlide() {
 export function SeventhTradition() {
   return (
     <div className="space-y-6">
-      <EditableArticle slug="seventh-tradition" afterBody={<SeventhTraditionSlide />} />
+      <EditableArticle
+        slug="seventh-tradition"
+        afterBody={<SeventhTraditionSlide />}
+      />
     </div>
   );
 }

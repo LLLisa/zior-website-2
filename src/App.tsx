@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
-import { RequireAuth } from "@/components/RequireAuth";
+import { RequireAdmin } from "@/components/RequireAdmin";
 import { Home } from "@/pages/Home";
 import { CmsPage } from "@/pages/CmsPage";
 import { Jft } from "@/pages/Jft";
@@ -39,12 +39,18 @@ export default function App() {
           path="/for-the-newcomer"
           element={<CmsPage slug="for-the-newcomer" />}
         />
-        <Route path="/helpful-links" element={<CmsPage slug="helpful-links" />} />
+        <Route
+          path="/helpful-links"
+          element={<CmsPage slug="helpful-links" />}
+        />
         <Route path="/service-at-zior" element={<ServiceAtZior />} />
         <Route path="/seventh-tradition" element={<SeventhTradition />} />
         <Route path="/scripts/:slug" element={<ScriptRoute />} />
         <Route path="/decks/:slug" element={<DeckRoute />} />
-        <Route path="/slide-deck-daily" element={<SlideDeckPage slug="daily" />} />
+        <Route
+          path="/slide-deck-daily"
+          element={<SlideDeckPage slug="daily" />}
+        />
         <Route
           path="/slide-deck-anniversary"
           element={<SlideDeckPage slug="anniversary" />}
@@ -56,7 +62,7 @@ export default function App() {
         />
         <Route path="/login" element={<Login />} />
 
-        <Route element={<RequireAuth />}>
+        <Route element={<RequireAdmin />}>
           <Route path="/admin/users" element={<UsersPage />} />
           <Route path="/admin/settings" element={<SettingsPage />} />
         </Route>
