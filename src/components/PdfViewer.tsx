@@ -17,10 +17,10 @@ type Mode = "page" | "text";
 
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 4;
-const ZOOM_STEP = 0.25;
+const ZOOM_STEP = 0.1; // 10% of the 100% base per click
 const MIN_TEXT = 1; // rem
 const MAX_TEXT = 3;
-const TEXT_STEP = 0.25;
+const TEXT_STEP = 0.125; // 0.125 / TEXT_BASE = 10% per click
 const TEXT_BASE = 1.25; // rem shown as 100%
 const PADDING = 24; // matches the body wrapper's horizontal padding (p-3 * 2)
 
@@ -196,11 +196,17 @@ export default function PdfViewer({ src }: { src: string }) {
   const clampZoom = (z: number) =>
     setZoom(Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Number(z.toFixed(2)))));
   const clampText = (r: number) =>
-    setTextRem(Math.min(MAX_TEXT, Math.max(MIN_TEXT, Number(r.toFixed(2)))));
+    // 3 decimals so the 0.125rem step (e.g. 1.375) isn't rounded off, which
+    // would make the displayed percentage drift off clean 10% increments.
+    setTextRem(Math.min(MAX_TEXT, Math.max(MIN_TEXT, Number(r.toFixed(3)))));
 
   return (
     <div
-      className="rounded-lg border border-border"
+      // On wide screens let the viewer break ~5% past the page's content column
+      // on each side (10% wider overall) so the script renders larger. Gated at
+      // lg, where the centered layout has ample margin, so narrower screens and
+      // the rest of the page are untouched.
+      className="rounded-lg border border-border lg:-mx-[5%] lg:w-[110%]"
       role="region"
       aria-label="Script document viewer"
     >
