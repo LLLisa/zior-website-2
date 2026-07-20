@@ -54,7 +54,7 @@ export const PAGES: Array<{ slug: string; title: string; body: string }> = [
   {
     slug: "service-at-zior-more",
     title: "More about service",
-    body: "<p>The content of this website is editable only by the Group Chair or a delegated trusted servant, so they are the only users who are able to sign in. If you would like to suggest changes or corrections to this website, come to our business meeting! It is held the 1st and 3rd Monday of every month at 6pm EST, one hour before the regular meeting,</p>",
+    body: "<p>The content of this website is editable only by the Group Chair or a delegated trusted servant, so they are the only users who are able to sign in. If you would like to suggest changes or corrections to this website, come to our business meeting! It is held the 1st and 3rd Monday of every month at 6pm EST, one hour before the regular meeting.</p>",
   },
   {
     slug: "seventh-tradition",

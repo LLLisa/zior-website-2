@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-07-14T15:04:59.982Z",
+  "syncedAt": "2026-07-20T13:26:27.925Z",
   "decks": [
     {
       "slug": "anniversary",
@@ -51,7 +51,7 @@
           "kind": "image",
           "file": "slides/anniversary/07.png",
           "alt": "7th Tradition",
-          "hash": "08fea1c703e7cfcc3ce5bb9ad5d9380d00e89adf58238e5acadb71a694006aa0"
+          "hash": "54313ed59ee1ad046b9e241ad7b26d61261a12b169001dbf179d67b1260b7ff1"
         },
         {
           "kind": "image",
@@ -118,6 +118,18 @@
           "file": "slides/anniversary/18.png",
           "alt": "Welcome to the family",
           "hash": "9fa12183cb60f66bc4c3fe301f697a7942c0f5bb6e3d37769022dbbad4e3b17f"
+        },
+        {
+          "kind": "image",
+          "file": "slides/anniversary/19.png",
+          "alt": "We Do Recover",
+          "hash": "dee01577e911f3631ec88f37db5511d962292969de9918de7cdb72e404d16464"
+        },
+        {
+          "kind": "image",
+          "file": "slides/anniversary/20.png",
+          "alt": "3rd Step Prayer",
+          "hash": "4ef7e4ea9bf659308b322484bbc562629003757c71b308fc44987bbd73db4a62"
         }
       ]
     },
@@ -171,7 +183,19 @@
           "kind": "image",
           "file": "slides/daily/07.png",
           "alt": "7th Tradition",
-          "hash": "08fea1c703e7cfcc3ce5bb9ad5d9380d00e89adf58238e5acadb71a694006aa0"
+          "hash": "54313ed59ee1ad046b9e241ad7b26d61261a12b169001dbf179d67b1260b7ff1"
+        },
+        {
+          "kind": "image",
+          "file": "slides/daily/08.png",
+          "alt": "We Do Recover",
+          "hash": "dee01577e911f3631ec88f37db5511d962292969de9918de7cdb72e404d16464"
+        },
+        {
+          "kind": "image",
+          "file": "slides/daily/09.png",
+          "alt": "3rd Step Prayer",
+          "hash": "4ef7e4ea9bf659308b322484bbc562629003757c71b308fc44987bbd73db4a62"
         }
       ]
     }
@@ -184,10 +208,28 @@
       "hash": "e434c8484d8898d657b609ff87d058bbf4de3d5023bd88bcc7a118cc870a79d4"
     },
     {
+      "slug": "anniversary-meeting-script",
+      "title": "Anniversary Meeting Script",
+      "file": "scripts/anniversary-meeting-script.pdf",
+      "hash": "09660ae4a1c7aa830360870664e1764f9e6690c8bc481645ec198cd1165a55f6"
+    },
+    {
       "slug": "daily",
       "title": "Daily Meeting Script",
       "file": "scripts/daily.pdf",
       "hash": "4c58e9524f040ad89bb525724eef7a85e5ba549a60bed2f24d5fca751c24e4fd"
+    },
+    {
+      "slug": "daily-meeting-script",
+      "title": "Daily Meeting Script",
+      "file": "scripts/daily-meeting-script.pdf",
+      "hash": "a34056bd0e647c39aaeb97c2e34dc1d2ca857732ede7f4f5aa66ae6b17a729b4"
+    },
+    {
+      "slug": "ninety-day-panel-script",
+      "title": "Ninety-Day Panel Script",
+      "file": "scripts/ninety-day-panel-script.pdf",
+      "hash": "86ebeecf467d43541a21c692cadac54f45f0cfda8785db5d5a23aa516d24cb3b"
     }
   ]
 }
