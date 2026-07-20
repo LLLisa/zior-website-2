@@ -57,7 +57,11 @@ export function Login() {
               <p className="font-medium">Check your email</p>
               <p className="text-sm text-muted-foreground">
                 If an account exists for <strong>{email}</strong>, a sign-in link
-                is on its way. The link expires in 15 minutes.
+                is on its way. The link expires in 1 hour.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Didn't get it within a few minutes? Check your spam folder, or
+                ask the group chair to confirm your account.
               </p>
             </div>
           ) : (
