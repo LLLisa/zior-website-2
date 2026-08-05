@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { NavLink, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,20 +22,26 @@ export function MobileNav() {
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex size-10 items-center justify-center rounded-md text-primary-foreground transition-colors hover:bg-white/10"
+        className="inline-flex size-10 cursor-pointer items-center justify-center rounded-md text-primary-foreground transition-colors hover:bg-white/10"
       >
         {open ? <X className="size-6" /> : <Menu className="size-6" />}
       </button>
 
       {open && (
         <>
-          <button
-            type="button"
-            aria-hidden="true"
-            tabIndex={-1}
-            onClick={() => setOpen(false)}
-            className="fixed inset-0 z-40 cursor-default bg-black/20"
-          />
+          {/* Portaled to the body so it sits outside the header's subtree —
+              otherwise it would dim the header along with the page. The header
+              carries a higher z-index and stays undimmed above it. */}
+          {createPortal(
+            <button
+              type="button"
+              aria-hidden="true"
+              tabIndex={-1}
+              onClick={() => setOpen(false)}
+              className="fixed inset-0 z-40 cursor-default bg-black/60"
+            />,
+            document.body,
+          )}
           <nav className="absolute inset-x-0 top-full z-50 border-t border-white/10 bg-primary shadow-xl">
             <ul className="mx-auto flex max-w-5xl flex-col gap-1 px-3 py-3">
               {navRoutes.map((route) => (
