@@ -4,7 +4,7 @@
 
 // The reading only changes once a day, so cache it for the calendar day and
 // reuse it until the date rolls over. Keyed on the US/Eastern date to match the
-// meeting's timezone (and roughly when jftna.org publishes the new reading), so
+// meeting's timezone (and roughly when na.org publishes the new reading), so
 // the cache invalidates in step with the content rather than at UTC midnight.
 let cache: { day: string; html: string } | null = null;
 let inflight: Promise<string> | null = null;
@@ -19,6 +19,29 @@ function easternDay(): string {
   }).format(new Date());
 }
 
+// na.org/daily-meditations/ is a full WordPress page with two tabs (Just for
+// Today, and A Spiritual Principle a Day) plus all the site's nav/footer/script
+// chrome. The JFT reading itself is the <table> immediately following the
+// aria-labelledby="jft" tab panel marker — the only reliable, upstream-owned
+// anchor for it. Extracting just that table here (rather than caching/proxying
+// the whole page) is what keeps the rest of the app's HTML consumers working
+// unchanged.
+function extractJftFragment(fullHtml: string): string {
+  const marker = fullHtml.indexOf('aria-labelledby="jft"');
+  if (marker === -1) {
+    throw new Error("JFT upstream page shape changed: tab marker not found");
+  }
+  const tableStart = fullHtml.indexOf("<table", marker);
+  if (tableStart === -1) {
+    throw new Error("JFT upstream page shape changed: table not found");
+  }
+  const tableEnd = fullHtml.indexOf("</table>", tableStart);
+  if (tableEnd === -1) {
+    throw new Error("JFT upstream page shape changed: table not closed");
+  }
+  return fullHtml.slice(tableStart, tableEnd + "</table>".length);
+}
+
 export async function fetchJftHtml(): Promise<string> {
   const day = easternDay();
   if (cache && cache.day === day) return cache.html;
@@ -26,11 +49,12 @@ export async function fetchJftHtml(): Promise<string> {
   // Coalesce concurrent misses so a burst only triggers one upstream fetch.
   if (!inflight) {
     inflight = (async () => {
-      const upstream = await fetch("https://www.jftna.org/jft/");
+      const upstream = await fetch("https://na.org/daily-meditations/");
       if (!upstream.ok) {
         throw new Error(`JFT upstream returned ${upstream.status}`);
       }
-      const html = await upstream.text();
+      const fullHtml = await upstream.text();
+      const html = extractJftFragment(fullHtml);
       cache = { day, html }; // only cache on success, so errors aren't sticky
       return html;
     })().finally(() => {
@@ -73,16 +97,17 @@ export function parseJftParts(html: string): {
   bodyText: string;
 } {
   const strip = (s: string) => s.replace(/<[^>]+>/g, "").trim();
-  const date = strip(html.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i)?.[1] ?? "");
-  const title = strip(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1] ?? "");
+  // The date is a plain <h2>; the reading title is the <h2 class="heading1">
+  // — distinguishing by class rather than order/tag, since na.org's markup no
+  // longer puts the title in an <h1>.
+  const date = strip(html.match(/<h2>([\s\S]*?)<\/h2>/i)?.[1] ?? "");
+  const title = strip(
+    html.match(/<h2 class="heading1"[^>]*>([\s\S]*?)<\/h2>/i)?.[1] ?? "",
+  );
   const body = html
-    .replace(/<head[\s\S]*?<\/head>/i, "")
-    .replace(/<h1[\s\S]*?<\/h1>/i, "")
-    .replace(/<h2[\s\S]*?<\/h2>/i, "");
-  const bodyText = jftToText(body)
-    .split("\n")
-    .filter((l) => !/^Page\s+\d+/i.test(l) && !/Copyright/i.test(l))
-    .join("\n");
+    .replace(/<h2>[\s\S]*?<\/h2>/i, "")
+    .replace(/<h2 class="heading1"[^>]*>[\s\S]*?<\/h2>/i, "");
+  const bodyText = jftToText(body);
   const datePart = date.split(",")[0].trim().toUpperCase();
   const heading = datePart ? `JUST FOR TODAY - ${datePart}` : "JUST FOR TODAY";
   return { heading, title, bodyText };

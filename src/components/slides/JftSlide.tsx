@@ -8,22 +8,22 @@ const BASE_FONT = 24; // px at design size; auto-fit shrinks this to fit
 
 type Parsed = { heading: string; reading: string; bodyHtml: string };
 
-// Restructure the raw jftna.org markup into the slide's layout: a yellow
-// "JUST FOR TODAY – DATE" header, the white reading title, then the body.
+// Restructure the na.org JFT table (already extracted server-side, see
+// server/jft.ts) into the slide's layout: a yellow "JUST FOR TODAY – DATE"
+// header, the white reading title, then the body. The date is a plain <h2>;
+// the reading title is <h2 class="heading1"> — na.org no longer uses <h1>.
 function parseJft(raw: string): Parsed {
   const doc = new DOMParser().parseFromString(raw, "text/html");
-  const h2 = doc.querySelector("h2");
-  const h1 = doc.querySelector("h1");
-  const dateStr = h2?.textContent?.trim() ?? "";
-  const reading = h1?.textContent?.trim() ?? "";
+  const title = doc.querySelector("h2.heading1");
+  const h2s = Array.from(doc.querySelectorAll("h2"));
+  const dateEl = h2s.find((h) => h !== title);
+  const dateStr = dateEl?.textContent?.trim() ?? "";
+  const reading = title?.textContent?.trim() ?? "";
 
-  // Drop the pieces we render ourselves or that the sample omits.
-  h2?.closest("tr")?.remove();
-  h1?.closest("tr")?.remove();
-  doc.querySelector('a[href*="na.org"]')?.closest("tr")?.remove();
-  doc.querySelectorAll("td").forEach((td) => {
-    if (/^\s*Page\s+\d+/i.test(td.textContent ?? "")) td.closest("tr")?.remove();
-  });
+  // Drop the heading rows we render ourselves; everything else in the table
+  // is the body (page citation, quote, source, paragraphs, closing thought).
+  dateEl?.closest("tr")?.remove();
+  title?.closest("tr")?.remove();
 
   const table = doc.querySelector("table");
   const bodyHtml = table ? table.outerHTML : doc.body.innerHTML;
